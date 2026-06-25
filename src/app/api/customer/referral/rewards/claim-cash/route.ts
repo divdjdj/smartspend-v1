@@ -78,6 +78,30 @@ export async function POST(req: Request) {
         `<p>Hello,</p><p>We have successfully processed your withdrawal request of <strong>₹${claimAmount}</strong>.</p><p>The cash has been disbursed to your account balance. Transfer ID: <code>${payoutResult.transferId}</code>.</p>`
       );
 
+      // Trigger in-app notifications
+      try {
+        await createNotification({
+          recipientId: user._id,
+          title: 'Cash Reward Disbursed! 💸',
+          message: `Your cash withdrawal claim of ₹${claimAmount} was completed successfully (Auto-credited to balance).`,
+          type: 'reward',
+          actionUrl: '/client/referral'
+        });
+
+        const admins = await User.find({ role: 'admin' });
+        for (const admin of admins) {
+          await createNotification({
+            recipientId: admin._id,
+            title: 'Cash Payout Processed (Auto)',
+            message: `${user.fullName || user.email} claimed and received ₹${claimAmount} automatically.`,
+            type: 'reward',
+            actionUrl: '/admin/referral'
+          });
+        }
+      } catch (notifErr) {
+        console.error('Error triggering auto claim in-app notifications:', notifErr);
+      }
+
       return NextResponse.json({
         success: true,
         status: 'completed',
@@ -102,6 +126,30 @@ export async function POST(req: Request) {
           'Your cash claim request has been submitted',
           `<p>Hello,</p><p>Your withdrawal claim request for <strong>₹${claimAmount}</strong> has been submitted. It is now awaiting administrative approval.</p>`
         );
+
+        // Trigger in-app notifications
+        try {
+          await createNotification({
+            recipientId: user._id,
+            title: 'Cash Claim Submitted ⏳',
+            message: `Your withdrawal request of ₹${claimAmount} has been submitted for administrative review.`,
+            type: 'reward',
+            actionUrl: '/client/referral'
+          });
+
+          const admins = await User.find({ role: 'admin' });
+          for (const admin of admins) {
+            await createNotification({
+              recipientId: admin._id,
+              title: 'New Cash Claim Request',
+              message: `${user.fullName || user.email} requested a cash payout of ₹${claimAmount}.`,
+              type: 'reward',
+              actionUrl: '/admin/referral'
+            });
+          }
+        } catch (notifErr) {
+          console.error('Error triggering pending claim in-app notifications:', notifErr);
+        }
       }
 
       return NextResponse.json({

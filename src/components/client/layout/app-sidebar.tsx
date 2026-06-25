@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
+import { useSession } from "next-auth/react"
 
-import { NavMain } from "@/components/nav-main"
-import { NavUser } from "@/components/nav-user"
+import { NavMain } from "@/components/client/layout/nav-main"
+import { NavUser } from "@/components/client/layout/nav-user"
 import {
   Sidebar,
   SidebarContent,
@@ -32,7 +33,7 @@ const data = {
     },
     {
       title: "Enquiries",
-      url: "/admin/enquiry",
+      url: "/client/enquiry",
       icon: (
         <ListIcon
         />
@@ -50,6 +51,18 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name || (session?.user?.email ? session.user.email.split('@')[0] : "User");
+  const userEmail = session?.user?.email || "";
+  const userAvatar = session?.user?.image || "";
+
+  const activeUser = {
+    name: userName,
+    email: userEmail,
+    avatar: userAvatar,
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -71,7 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={activeUser} />
       </SidebarFooter>
     </Sidebar>
   )

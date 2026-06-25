@@ -6,6 +6,7 @@ import User from '@/features/shared/model/user';
 import ReferralReward from '@/features/shared/model/referral-reward';
 import { processPayoutTransfer } from '@/features/shared/services/payout';
 import { sendReferralEmail } from '@/lib/mail';
+import { createNotification } from '@/lib/notification';
 
 export async function POST(req: Request) {
   try {
@@ -60,6 +61,15 @@ export async function POST(req: Request) {
         'Your cash reward claim has been approved!',
         `<p>Hello,</p><p>Great news! Administrative review is complete and your cash withdrawal of <strong>₹${redemption.amount}</strong> has been approved.</p><p>Transfer ID: <code>${payoutResult.transferId}</code>.</p>`
       );
+
+      // Trigger in-app notification
+      await createNotification({
+        recipientId: user._id,
+        title: 'Cash Payout Approved! 💸',
+        message: `Your cash claim request of ₹${redemption.amount} has been approved and credited to your wallet balance.`,
+        type: 'reward',
+        actionUrl: '/client/referral'
+      });
     } else if (redemption.type === 'subscription_activation') {
       // Find and extend active subscription
       const activeSubs = user.subscriptions.filter(s => s.status === 'active' && s.endDate > new Date());
@@ -78,6 +88,15 @@ export async function POST(req: Request) {
         'Your subscription extension has been approved!',
         `<p>Hello,</p><p>Great news! Administrative review is complete and your subscription extension of <strong>${redemption.months} free months</strong> has been applied to your <strong>${sub.packageName}</strong> subscription.</p>`
       );
+
+      // Trigger in-app notification
+      await createNotification({
+        recipientId: user._id,
+        title: 'Subscription Extended! 💳',
+        message: `Your subscription extension of ${redemption.months} free months has been applied to ${sub.packageName}.`,
+        type: 'subscription',
+        actionUrl: '/client/dashboard'
+      });
     }
 
     // Update redemption status
