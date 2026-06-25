@@ -40,7 +40,7 @@ const data = {
     },
     {
       title: "Referrals",
-      url: "/referral",
+      url: "/client/referral",
       icon: (
         <UsersIcon
         />

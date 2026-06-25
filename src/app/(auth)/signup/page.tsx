@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthLayout } from '@/components/auth/auth-layout';
@@ -9,6 +9,18 @@ import { AuthPasswordInput } from '@/components/auth/auth-password-input';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthAlert } from '@/components/auth/auth-alert';
 import { PasswordRequirements } from '@/components/auth/password-requirements';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -24,6 +36,19 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlRef = params.get('ref');
+      const cookieRef = getCookie('referral_code');
+      const code = urlRef || cookieRef;
+      if (code) {
+        setReferralCode(code.trim().toUpperCase());
+      }
+    }
+  }, []);
 
   // Password validation checks
   const passwordChecks = {
@@ -66,6 +91,7 @@ export default function SignupPage() {
           email: formData.email,
           password: formData.password,
           phone: formData.phone || undefined,
+          referralCode: referralCode || undefined
         }),
       });
 
@@ -122,6 +148,16 @@ export default function SignupPage() {
           message={`${success} Redirecting to login page in 5s...`}
           className="mb-4"
         />
+      )}
+
+      {referralCode && !success && (
+        <div className="mb-4 flex flex-col gap-1 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-400 font-medium">
+          <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Referral Code Applied: {referralCode}
+          </div>
+          <p className="text-[11px] text-muted-foreground">You will automatically receive ₹500 OFF on your first subscription purchase!</p>
+        </div>
       )}
 
       <form className="space-y-4" onSubmit={handleSubmit}>
