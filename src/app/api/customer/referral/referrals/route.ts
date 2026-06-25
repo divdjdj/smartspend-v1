@@ -3,9 +3,16 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
-import User from '@/features/shared/model/user'; // Needed for populate registration
+import '@/features/shared/model/user'; // Needed for populate registration
 
-export async function GET(req: Request) {
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -19,7 +26,7 @@ export async function GET(req: Request) {
       .sort({ createdAt: -1 });
 
     const formattedConversions = conversions.map(c => {
-      const prospect = c.prospect_id as any;
+      const prospect = c.prospect_id as unknown as PopulatedUser;
       return {
         _id: c._id,
         referralCode: c.referral_code,

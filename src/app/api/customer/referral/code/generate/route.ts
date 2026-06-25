@@ -6,7 +6,7 @@ import User from '@/features/shared/model/user';
 import ReferralCode from '@/features/shared/model/referral-code';
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {

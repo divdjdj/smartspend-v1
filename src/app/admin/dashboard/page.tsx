@@ -100,8 +100,10 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    setMounted(true);
-    fetchDashboardData();
+    setTimeout(() => {
+      setMounted(true);
+      fetchDashboardData();
+    }, 0);
   }, []);
 
   const formatDate = (dateStr: string) => {
@@ -337,7 +339,7 @@ export default function AdminDashboardPage() {
             {data.feeds.recentSignups.length === 0 ? (
               <div className="text-center text-xs text-muted-foreground py-10 italic">No recent signups.</div>
             ) : (
-              data.feeds.recentSignups.map((client, idx) => (
+              data.feeds.recentSignups.map((client) => (
                 <div key={client._id} className="flex justify-between items-center text-xs border-b border-border/5 pb-3 last:border-0 last:pb-0">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-foreground block">{client.firstName ? `${client.firstName} ${client.lastName || ''}` : client.email}</span>
@@ -361,7 +363,7 @@ export default function AdminDashboardPage() {
             {data.feeds.recentEnquiries.length === 0 ? (
               <div className="text-center text-xs text-muted-foreground py-10 italic">No recent enquiries.</div>
             ) : (
-              data.feeds.recentEnquiries.map((enq, idx) => (
+              data.feeds.recentEnquiries.map((enq) => (
                 <div key={enq._id} className="flex justify-between items-start text-xs border-b border-border/5 pb-3 last:border-0 last:pb-0">
                   <div className="space-y-0.5">
                     <span className="font-semibold text-foreground block">{enq.name}</span>

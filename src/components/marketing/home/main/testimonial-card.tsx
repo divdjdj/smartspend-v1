@@ -50,7 +50,7 @@ export function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {screenshots.map((s, i) => (
-                <button
+                <Button
                   key={i}
                   type="button"
                   onClick={() => openAt(i)}
@@ -63,7 +63,7 @@ export function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }
                     className="h-full w-full object-cover object-top transition duration-300 group-hover/thumb:brightness-95"
                   />
                   <div className="absolute inset-0 bg-black/5 opacity-0 group-hover/thumb:opacity-100 transition-opacity" />
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -116,22 +116,22 @@ export function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }
               )}
               {total > 1 && (
                 <>
-                  <button
+                  <Button
                     type="button"
                     onClick={prev}
                     aria-label="Previous screenshot"
                     className="absolute left-2.5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-black/60 text-white backdrop-blur-sm transition-all hover:bg-black/80 hover:scale-105 active:scale-95 focus:outline-none"
                   >
                     <ChevronLeft className="h-5 w-5" />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={next}
                     aria-label="Next screenshot"
                     className="absolute right-2.5 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-xl bg-black/60 text-white backdrop-blur-sm transition-all hover:bg-black/80 hover:scale-105 active:scale-95 focus:outline-none"
                   >
                     <ChevronRight className="h-5 w-5" />
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
@@ -139,7 +139,7 @@ export function TestimonialCard({ testimonial: t }: { testimonial: Testimonial }
             {total > 1 && (
               <div className="flex justify-center gap-1.5">
                 {screenshots.map((_, i) => (
-                  <button
+                  <Button
                     key={i}
                     type="button"
                     onClick={() => setIndex(i)}

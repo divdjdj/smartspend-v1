@@ -5,7 +5,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/features/shared/model/user';
 import ReferralCode from '@/features/shared/model/referral-code';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
-import ReferralReward, { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
+import { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
 import { sendReferralEmail } from '@/lib/mail';
 import { createNotification } from '@/lib/notification';
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     let discountApplied = 0;
     let netAmount = originalPrice;
     let referralApplied = false;
-    let referrerId = user.referredBy?.referrerId;
+    const referrerId = user.referredBy?.referrerId;
 
     // Check if referred by someone and it is their first purchase
     if (referrerId && isFirstPurchase) {

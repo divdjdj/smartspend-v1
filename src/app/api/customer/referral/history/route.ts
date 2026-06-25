@@ -5,7 +5,14 @@ import connectDB from '@/lib/mongodb';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 import { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
 
-export async function GET(req: Request) {
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {
@@ -25,7 +32,7 @@ export async function GET(req: Request) {
 
     // 2. Format Earnings
     const earningsHistory = conversions.map(c => {
-      const prospect = c.prospect_id as any;
+      const prospect = c.prospect_id as unknown as PopulatedUser;
       const prospectName = prospect 
         ? `${prospect.firstName || ''} ${prospect.lastName || ''}`.trim() || prospect.email
         : c.prospect_email || 'Referred User';

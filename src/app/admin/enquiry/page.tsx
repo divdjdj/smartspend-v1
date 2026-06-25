@@ -10,7 +10,6 @@ import {
   Hourglass, 
   PhoneCall, 
   CheckCircle2, 
-  XCircle, 
   ListIcon, 
   Loader2,
   Calendar,
@@ -102,7 +101,9 @@ export default function EnquiryPage() {
   }, [status, search, page]);
 
   useEffect(() => {
-    fetchEnquiries();
+    setTimeout(() => {
+      fetchEnquiries();
+    }, 0);
   }, [fetchEnquiries]);
 
   // Handle status update of an enquiry

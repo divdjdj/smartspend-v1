@@ -6,6 +6,13 @@ import ReferralCode from '@/features/shared/model/referral-code';
 import User from '@/features/shared/model/user';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
 // GET all referral codes (with details and stats)
 export async function GET(req: Request) {
   try {
@@ -66,7 +73,7 @@ export async function GET(req: Request) {
         0
       );
 
-      const referrer = c.referrer_id as any;
+      const referrer = c.referrer_id as unknown as PopulatedUser;
 
       return {
         _id: c._id,

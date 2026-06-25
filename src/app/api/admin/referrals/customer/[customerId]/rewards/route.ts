@@ -6,6 +6,13 @@ import { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward
 import User from '@/features/shared/model/user';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
 export async function GET(req: Request, { params }: { params: Promise<{ customerId: string }> }) {
   try {
     const session = await getServerSession(authOptions);
@@ -31,7 +38,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ customer
     }).populate('prospect_id', 'firstName lastName email');
 
     const earnings = conversions.map(c => {
-      const prospect = c.prospect_id as any;
+      const prospect = c.prospect_id as unknown as PopulatedUser;
       return {
         _id: c._id,
         date: c.timeline.purchased_at || c.createdAt || new Date(),

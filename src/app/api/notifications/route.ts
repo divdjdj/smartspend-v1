@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     const limit = Math.max(1, parseInt(searchParams.get('limit') || '20', 10));
     const skip = (page - 1) * limit;
 
-    const query: Record<string, any> = {
+    const query: Record<string, unknown> = {
       recipientId: new mongoose.Types.ObjectId(session.user.id)
     };
 

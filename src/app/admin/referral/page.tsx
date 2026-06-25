@@ -95,7 +95,7 @@ interface ConversionItem {
     amount: number;
     status: string;
   };
-  referrer: { name: string; email: string } | null;
+  referrer: { _id?: string; name: string; email: string } | null;
   prospect: { name: string; email: string } | null;
   isFlagged?: boolean;
   flagReason?: string;
@@ -138,14 +138,14 @@ export default function AdminReferralsPage() {
   const [codesSearch, setCodesSearch] = useState("");
   const [codesFilter, setCodesFilter] = useState("all");
   const [codesPage, setCodesPage] = useState(1);
-  const [codesTotalPages, setCodesTotalPages] = useState(1);
+  const [, setCodesTotalPages] = useState(1);
 
   // States for conversions
   const [conversions, setConversions] = useState<ConversionItem[]>([]);
   const [convStageFilter, setConvStageFilter] = useState("all");
   const [convSearch, setConvSearch] = useState("");
   const [convPage, setConvPage] = useState(1);
-  const [convTotalPages, setConvTotalPages] = useState(1);
+  const [, setConvTotalPages] = useState(1);
 
   // Pending queue derived or loaded
   const [pendingQueue, setPendingQueue] = useState<PendingApprovalItem[]>([]);
@@ -233,8 +233,8 @@ export default function AdminReferralsPage() {
       if (dataConvs.success) {
         // Look for calculated stage conversions (unfunded rewards)
         dataConvs.conversions
-          .filter((c: any) => c.referrerReward?.status === 'calculated')
-          .forEach((c: any) => {
+          .filter((c: ConversionItem) => c.referrerReward?.status === 'calculated')
+          .forEach((c: ConversionItem) => {
             pending.push({
               customerId: c.referrer?._id || 'unknown',
               customerName: c.referrer?.name || 'Referrer',
@@ -243,7 +243,7 @@ export default function AdminReferralsPage() {
               type: c.referrerReward?.type === 'subscription' ? 'subscription_activation' : 'cash_claim',
               amount: c.referrerReward?.type === 'cash' ? c.referrerReward?.amount : 0,
               months: c.referrerReward?.type === 'subscription' ? c.referrerReward?.amount : 0,
-              date: c.timeline?.purchased_at || c.createdAt
+              date: c.timeline?.purchased_at || c.createdAt || ''
             });
           });
       }
@@ -267,7 +267,9 @@ export default function AdminReferralsPage() {
   }, [fetchAnalytics, fetchCodes, fetchConversions, fetchSettings, fetchPendingQueue]);
 
   useEffect(() => {
-    loadAllData();
+    setTimeout(() => {
+      loadAllData();
+    }, 0);
   }, [loadAllData]);
 
   // Handle toggling referral code status
@@ -284,7 +286,7 @@ export default function AdminReferralsPage() {
       } else {
         throw new Error();
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to toggle code status.");
     }
   };
@@ -300,7 +302,7 @@ export default function AdminReferralsPage() {
       } else {
         throw new Error();
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete code.");
     }
   };
@@ -393,7 +395,7 @@ export default function AdminReferralsPage() {
       } else {
         throw new Error();
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to reject reward.");
     } finally {
       setProcessingRewardId(null);
@@ -425,7 +427,7 @@ export default function AdminReferralsPage() {
     }
   };
 
-  const handleSettingsFieldChange = (field: keyof ProgramSettings, value: any) => {
+  const handleSettingsFieldChange = (field: keyof ProgramSettings, value: string | number | boolean) => {
     if (!settings) return;
     setSettings(prev => prev ? { ...prev, [field]: value } : null);
   };
@@ -653,7 +655,7 @@ export default function AdminReferralsPage() {
                     <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5">Reward Type</label>
                     <select
                       value={newRewardType}
-                      onChange={e => setNewRewardType(e.target.value as any)}
+                      onChange={e => setNewRewardType(e.target.value as 'cash' | 'subscription')}
                       className="w-full bg-soft/30 border border-border/10 rounded-xl px-3 py-2.5 text-sm text-foreground focus:outline-none"
                     >
                       <option value="cash" className="bg-background text-foreground">Cash Payout</option>
@@ -909,7 +911,7 @@ export default function AdminReferralsPage() {
                               ) : c.timeline?.clicked_at ? (
                                 <>Clicked link on {formatDate(c.timeline.clicked_at)}</>
                               ) : (
-                                <>Updated {formatDate(c.timeline?.clicked_at || c.createdAt as any)}</>
+                                <>Updated {formatDate(c.timeline?.clicked_at || c.createdAt || '')}</>
                               )}
                             </td>
                             <td className="px-6 py-4 text-right text-xs">

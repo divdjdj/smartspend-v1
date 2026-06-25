@@ -34,11 +34,11 @@ export async function processPayoutTransfer(
       transferId: `tx_mock_${Math.random().toString(36).substring(2, 9).toUpperCase()}` 
     };
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error processing payout transfer:', error);
     return { 
       success: false, 
-      error: error.message || 'Payment provider transfer failed.' 
+      error: error instanceof Error ? error.message : 'Payment provider transfer failed.' 
     };
   }
 }

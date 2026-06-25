@@ -3,7 +3,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
-import User from '@/features/shared/model/user';
+import '@/features/shared/model/user';
+
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
 
 export async function GET(req: Request) {
   try {
@@ -46,8 +53,8 @@ export async function GET(req: Request) {
 
     // Format list for frontend
     const formattedConversions = conversions.map(c => {
-      const referrer = c.referrer_id as any;
-      const prospect = c.prospect_id as any;
+      const referrer = c.referrer_id as unknown as PopulatedUser;
+      const prospect = c.prospect_id as unknown as PopulatedUser;
 
       return {
         _id: c._id,

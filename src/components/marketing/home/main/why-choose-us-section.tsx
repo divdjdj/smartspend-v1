@@ -49,7 +49,7 @@ export function WhyChooseUsSection() {
         </div>
 
         <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f, i) => (
+          {features.map((f) => (
             <div
               key={f.title}
               className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card/30 backdrop-blur-sm p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-md hover:shadow-primary/5 hover:bg-card/60"

@@ -12,7 +12,6 @@ import {
   MessageSquare,
   Sparkles,
   ArrowRight,
-  TrendingUp,
   Inbox,
   UserCheck,
   CheckCircle2,
@@ -90,7 +89,9 @@ export default function ClientDashboardPage() {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    setTimeout(() => {
+      fetchDashboardData();
+    }, 0);
   }, []);
 
   const handleCopyLink = () => {
@@ -384,7 +385,7 @@ export default function ClientDashboardPage() {
               {data.conversions.length === 0 ? (
                 <div className="text-center text-xs text-muted-foreground py-10 italic">No referred signups yet. Share your link to get started!</div>
               ) : (
-                data.conversions.map((conv, idx) => (
+                data.conversions.map((conv) => (
                   <div key={conv._id} className="flex justify-between items-start text-xs border-b border-border/5 pb-3.5 last:border-0 last:pb-0">
                     <div className="space-y-0.5 min-w-0">
                       <span className="font-semibold text-foreground truncate block">{conv.prospect_email}</span>

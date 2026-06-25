@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import ReferralCode from '@/features/shared/model/referral-code';
-import ReferralConversion from '@/features/shared/model/referral-conversion';
+// import ReferralConversion from '@/features/shared/model/referral-conversion';
 
 export async function POST(req: Request) {
   try {
@@ -27,43 +27,43 @@ export async function POST(req: Request) {
     }
 
     // Capture metadata
-    const userAgent = req.headers.get('user-agent') || 'unknown';
-    const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
+    // const userAgent = req.headers.get('user-agent') || 'unknown';
+    // const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
 
     // Parse simple device/browser info from user agent
-    let deviceType = 'desktop';
-    if (/mobile/i.test(userAgent)) deviceType = 'mobile';
-    else if (/tablet|ipad/i.test(userAgent)) deviceType = 'tablet';
+    // let deviceType = 'desktop';
+    // if (/mobile/i.test(userAgent)) deviceType = 'mobile';
+    // else if (/tablet|ipad/i.test(userAgent)) deviceType = 'tablet';
 
-    let browser = 'Other';
-    if (/chrome|crios/i.test(userAgent)) browser = 'Chrome';
-    else if (/firefox|fxios/i.test(userAgent)) browser = 'Firefox';
-    else if (/safari/i.test(userAgent) && !/chrome|crios/i.test(userAgent)) browser = 'Safari';
-    else if (/edge|edg/i.test(userAgent)) browser = 'Edge';
+    // let browser = 'Other';
+    // if (/chrome|crios/i.test(userAgent)) browser = 'Chrome';
+    // else if (/firefox|fxios/i.test(userAgent)) browser = 'Firefox';
+    // else if (/safari/i.test(userAgent) && !/chrome|crios/i.test(userAgent)) browser = 'Safari';
+    // else if (/edge|edg/i.test(userAgent)) browser = 'Edge';
 
-    let os = 'Other';
-    if (/windows/i.test(userAgent)) os = 'Windows';
-    else if (/macintosh|mac os x/i.test(userAgent)) os = 'macOS';
-    else if (/android/i.test(userAgent)) os = 'Android';
-    else if (/iphone|ipad/i.test(userAgent)) os = 'iOS';
-    else if (/linux/i.test(userAgent)) os = 'Linux';
+    // let os = 'Other';
+    // if (/windows/i.test(userAgent)) os = 'Windows';
+    // else if (/macintosh|mac os x/i.test(userAgent)) os = 'macOS';
+    // else if (/android/i.test(userAgent)) os = 'Android';
+    // else if (/iphone|ipad/i.test(userAgent)) os = 'iOS';
+    // else if (/linux/i.test(userAgent)) os = 'Linux';
 
     // Create clicked stage conversion record
-    const conversion = await ReferralConversion.create({
-      referral_code: referralCodeDoc.code,
-      referrer_id: referralCodeDoc.referrer_id,
-      conversion_stage: 'clicked',
-      timeline: {
-        clicked_at: new Date()
-      },
-      metadata: {
-        user_agent: userAgent,
-        ip_address: Array.isArray(ip) ? ip[0] : ip,
-        device_type: deviceType,
-        browser,
-        os
-      }
-    });
+    // const conversion = await ReferralConversion.create({
+    //   referral_code: referralCodeDoc.code,
+    //   referrer_id: referralCodeDoc.referrer_id,
+    //   conversion_stage: 'clicked',
+    //   timeline: {
+    //     clicked_at: new Date()
+    //   },
+    //   metadata: {
+    //     user_agent: userAgent,
+    //     ip_address: Array.isArray(ip) ? ip[0] : ip,
+    //     device_type: deviceType,
+    //     browser,
+    //     os
+    //   }
+    // });
 
     const response = NextResponse.json({
       success: true,

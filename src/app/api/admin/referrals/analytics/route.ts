@@ -5,9 +5,17 @@ import connectDB from '@/lib/mongodb';
 import ReferralCode from '@/features/shared/model/referral-code';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 import ReferralReward from '@/features/shared/model/referral-reward';
-import User from '@/features/shared/model/user';
+// import User from '@/features/shared/model/user';
 
-export async function GET(req: Request) {
+interface PopulatedUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  referralCode?: string;
+}
+
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== 'admin') {
@@ -58,7 +66,7 @@ export async function GET(req: Request) {
       .limit(5);
 
     const leaderboard = await Promise.all(topReferrersRaw.map(async (ledger) => {
-      const customer = ledger.customer_id as any;
+      const customer = ledger.customer_id as unknown as PopulatedUser;
       
       // Calculate conversion rate: purchases / clicks
       const clicks = await ReferralConversion.countDocuments({ referrer_id: ledger.customer_id });
@@ -88,8 +96,8 @@ export async function GET(req: Request) {
       .limit(10);
 
     const formattedRecent = recentConversions.map(c => {
-      const referrer = c.referrer_id as any;
-      const prospect = c.prospect_id as any;
+      const referrer = c.referrer_id as unknown as PopulatedUser;
+      const prospect = c.prospect_id as unknown as PopulatedUser;
       return {
         _id: c._id,
         referralCode: c.referral_code,

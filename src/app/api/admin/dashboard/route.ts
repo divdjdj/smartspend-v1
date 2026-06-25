@@ -6,7 +6,7 @@ import User from '@/features/shared/model/user';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 import Enquiry from '@/features/shared/model/enquiry';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     // 1. Authenticate session and check admin role
     const session = await getServerSession(authOptions);
@@ -120,7 +120,14 @@ export async function GET(req: Request) {
       .select('firstName lastName email subscriptions')
       .limit(50); // pull recent active users
 
-    const allSubs: any[] = [];
+    const allSubs: {
+      userName: string;
+      email: string;
+      packageName: string;
+      price: number;
+      startDate: Date | string;
+      status: string;
+    }[] = [];
     usersWithSubs.forEach(u => {
       u.subscriptions.forEach(s => {
         allSubs.push({

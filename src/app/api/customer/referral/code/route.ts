@@ -5,7 +5,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/features/shared/model/user';
 import ReferralCode from '@/features/shared/model/referral-code';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {

@@ -16,10 +16,8 @@ import {
   Shield,
   DollarSign,
   KeyRound,
-  ArrowUpRight,
   ShieldAlert,
   Activity,
-  Award,
   CreditCard
 } from "lucide-react";
 import { toast } from "sonner";
@@ -31,6 +29,7 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface SubscriptionItem {
   _id?: string;
@@ -94,7 +93,7 @@ export default function AllClientsPage() {
   const [stats, setStats] = useState<Stats>({ totalUsers: 0, activeUsers: 0, referrerUsers: 0, newUsersToday: 0 });
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; name?: string | null; email?: string | null; role?: string | null } | null>(null);
   const [updatingUser, setUpdatingUser] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -137,7 +136,9 @@ export default function AllClientsPage() {
   }, [role, status, type, search, page]);
 
   useEffect(() => {
-    fetchUsers();
+    setTimeout(() => {
+      fetchUsers();
+    }, 0);
   }, [fetchUsers]);
 
   // Handle updates to user status or role
@@ -472,7 +473,9 @@ export default function AllClientsPage() {
                           className="px-2 py-1 text-xs rounded border border-border/10 bg-soft/20 text-foreground hover:bg-soft/50 font-mono transition-all inline-flex items-center gap-1 text-[11px]"
                         >
                           {user.referralCode}
-                          <span className="text-[9px] text-muted-foreground opacity-60">Copy</span>
+                          <span className="text-[9px] text-muted-foreground opacity-60">
+                            {copiedCode === user.referralCode ? "Copied!" : "Copy"}
+                          </span>
                         </button>
                       ) : (
                         <span className="text-xs text-muted-foreground/40 italic">Not set</span>
@@ -493,14 +496,14 @@ export default function AllClientsPage() {
                         >
                           <Eye className="h-3.5 w-3.5" /> Details
                         </button>
-                        <button
-                          disabled={currentUser && currentUser.id === user._id}
+                        <Button
+                          disabled={currentUser?.id === user._id}
                           onClick={() => handleDeleteUser(user._id)}
                           className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-destructive/20 text-destructive bg-destructive/5 hover:bg-destructive/15 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer"
-                          title={currentUser && currentUser.id === user._id ? "You cannot delete yourself" : "Delete user profile"}
+                          title={currentUser?.id === user._id ? "You cannot delete yourself" : "Delete user profile"}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -590,12 +593,17 @@ export default function AllClientsPage() {
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <KeyRound className="h-4 w-4 opacity-75 shrink-0 text-brand" />
                       <span>Referral Link Code: {selectedUser.referralCode ? (
-                        <button
-                          onClick={() => copyToClipboard(selectedUser.referralCode || "", "Referral Code")}
-                          className="font-mono text-foreground underline hover:text-brand cursor-pointer pl-1"
-                        >
-                          {selectedUser.referralCode}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => copyToClipboard(selectedUser.referralCode || "", "Referral Code")}
+                            className="font-mono text-foreground underline hover:text-brand cursor-pointer pl-1"
+                          >
+                            {selectedUser.referralCode}
+                          </button>
+                          {copiedCode === selectedUser.referralCode && (
+                            <span className="text-[10px] text-emerald-400 font-medium ml-2">Copied!</span>
+                          )}
+                        </>
                       ) : (
                         <span className="text-muted-foreground/50 pl-1">None generated</span>
                       )}
@@ -635,7 +643,7 @@ export default function AllClientsPage() {
                         <button
                           key={r}
                           disabled={updatingUser}
-                          onClick={() => handleUpdateUser(selectedUser._id, { role: r as any })}
+                          onClick={() => handleUpdateUser(selectedUser._id, { role: r as 'customer' | 'admin' })}
                           className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize cursor-pointer transition-all border ${
                             selectedUser.role === r 
                               ? 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-sm'
@@ -658,7 +666,7 @@ export default function AllClientsPage() {
                         <button
                           key={s}
                           disabled={updatingUser}
-                          onClick={() => handleUpdateUser(selectedUser._id, { status: s as any })}
+                          onClick={() => handleUpdateUser(selectedUser._id, { status: s as 'active' | 'inactive' | 'suspended' })}
                           className={`px-3 py-1.5 text-xs font-semibold rounded-lg capitalize cursor-pointer transition-all border ${
                             selectedUser.status === s 
                               ? s === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-bold'

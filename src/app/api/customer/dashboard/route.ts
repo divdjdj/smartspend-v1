@@ -6,7 +6,7 @@ import User from '@/features/shared/model/user';
 import ReferralReward from '@/features/shared/model/referral-reward';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     // 1. Authenticate session and check user
     const session = await getServerSession(authOptions);

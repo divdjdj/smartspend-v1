@@ -45,7 +45,9 @@ export default function SignupPage() {
       const cookieRef = getCookie('referral_code');
       const code = urlRef || cookieRef;
       if (code) {
-        setReferralCode(code.trim().toUpperCase());
+        setTimeout(() => {
+          setReferralCode(code.trim().toUpperCase());
+        }, 0);
       }
     }
   }, []);

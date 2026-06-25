@@ -21,7 +21,7 @@ const updateProfileSchema = z.object({
   path: ['currentPassword']
 });
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {

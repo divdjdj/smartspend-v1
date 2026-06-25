@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     // 4. Construct query filters
-    const query: Record<string, any> = {};
+    const query: Record<string, unknown> = {};
 
     // Filter by role if not "all"
     if (role !== 'all') {

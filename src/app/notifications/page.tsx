@@ -38,6 +38,7 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [now] = useState(() => Date.now());
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -63,7 +64,9 @@ export default function NotificationsPage() {
   }, [filter, page]);
 
   useEffect(() => {
-    fetchNotifications();
+    setTimeout(() => {
+      fetchNotifications();
+    }, 0);
   }, [fetchNotifications]);
 
   // Mark a single notification as read
@@ -109,7 +112,7 @@ export default function NotificationsPage() {
       } else {
         throw new Error();
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to update notifications.");
     }
   };
@@ -134,7 +137,7 @@ export default function NotificationsPage() {
       } else {
         throw new Error(data.error);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to clear notification history.");
     }
   };
@@ -158,7 +161,7 @@ export default function NotificationsPage() {
       } else {
         throw new Error();
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete notification.");
     }
   };
@@ -179,7 +182,7 @@ export default function NotificationsPage() {
   };
 
   const formatTimeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
+    const diff = now - new Date(dateStr).getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(minutes / 6000);
     const days = Math.floor(hours / 24);

@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { 
   Gift, 
-  Share2, 
   Copy, 
   Wallet, 
   Check, 
@@ -16,11 +15,7 @@ import {
   History,
   Send,
   UserCheck,
-  TrendingUp,
-  ChevronRight,
-  ExternalLink,
-  Plus
-} from "lucide-react";
+  TrendingUp} from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -158,7 +153,9 @@ export default function ClientReferralPage() {
   }, []);
 
   useEffect(() => {
-    fetchAllData();
+    setTimeout(() => {
+      fetchAllData();
+    }, 0);
   }, [fetchAllData]);
 
   const handleGenerateCode = async () => {
