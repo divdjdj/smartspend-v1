@@ -16,7 +16,11 @@ export async function POST(req: Request) {
 
     const referralCodeDoc = await ReferralCode.findOne({
       code: code.trim().toUpperCase(),
-      is_active: true
+      is_active: true,
+      $or: [
+        { expires_at: { $exists: false } },
+        { expires_at: { $gt: new Date() } }
+      ]
     });
 
     if (!referralCodeDoc) {

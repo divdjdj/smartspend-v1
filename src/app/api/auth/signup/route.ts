@@ -62,7 +62,14 @@ export async function POST(req: Request) {
     let validCodeDoc = null;
 
     if (appliedCode) {
-      validCodeDoc = await ReferralCode.findOne({ code: appliedCode, is_active: true });
+      validCodeDoc = await ReferralCode.findOne({
+        code: appliedCode,
+        is_active: true,
+        $or: [
+          { expires_at: { $exists: false } },
+          { expires_at: { $gt: new Date() } }
+        ]
+      });
       if (validCodeDoc) {
         const referrerUser = await User.findById(validCodeDoc.referrer_id);
         if (referrerUser) {
@@ -71,6 +78,40 @@ export async function POST(req: Request) {
             referrerEmail: referrerUser.email
           };
         }
+      }
+    }
+
+    // Query if there's any matching enquiry to recover referral attribution
+    let matchedEnquiry = null;
+    try {
+      const Enquiry = (await import('@/features/shared/model/enquiry')).default;
+      matchedEnquiry = await Enquiry.findOne({
+        $or: [
+          { email: email.toLowerCase().trim() },
+          { mobile: phone ? phone.trim() : '___nonexistent___' }
+        ],
+        status: { $ne: 'resolved' }
+      });
+    } catch (enquiryErr) {
+      console.error('Error finding matching enquiry during signup:', enquiryErr);
+    }
+
+    // Recover referral attribution if user has no code but did enquire with a code
+    if (!referredByObj && matchedEnquiry && matchedEnquiry.referredBy?.referrerId) {
+      referredByObj = {
+        referrerId: matchedEnquiry.referredBy.referrerId,
+        referrerEmail: matchedEnquiry.referredBy.referrerEmail
+      };
+      appliedCode = matchedEnquiry.referralCode || '';
+      if (appliedCode) {
+        validCodeDoc = await ReferralCode.findOne({
+          code: appliedCode,
+          is_active: true,
+          $or: [
+            { expires_at: { $exists: false } },
+            { expires_at: { $gt: new Date() } }
+          ]
+        });
       }
     }
 
@@ -87,15 +128,84 @@ export async function POST(req: Request) {
       referredBy: referredByObj
     });
 
+    // Auto-generate referral code for this user
+    let userReferralCode = '';
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 10) {
+      userReferralCode = user.generateReferralCode();
+      const existingDoc = await ReferralCode.findOne({ code: userReferralCode });
+      if (!existingDoc) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+
+    if (isUnique) {
+      user.referralCode = userReferralCode;
+    }
+
     // Generate verification token
     const token = user.createEmailVerificationToken();
 
     // Save user
     await user.save();
 
-    // If referred, log conversion stage "signed_up"
+    // Link and resolve matched Enquiry
+    if (matchedEnquiry) {
+      try {
+        matchedEnquiry.status = 'resolved';
+        matchedEnquiry.client_id = user._id;
+        matchedEnquiry.notes = (matchedEnquiry.notes || '') + '\nConverted to registered user during signup.';
+        await matchedEnquiry.save();
+      } catch (enquirySaveErr) {
+        console.error('Error updating matched enquiry during signup:', enquirySaveErr);
+      }
+    }
+
+    // If referral code assigned, create database record
+    if (user.referralCode) {
+      try {
+        const { getReferralSettings } = await import('@/features/shared/model/referral-setting');
+        const settings = await getReferralSettings();
+        await ReferralCode.create({
+          code: user.referralCode,
+          referrer_id: user._id,
+          is_active: true,
+          reward: {
+            type: 'cash',
+            cashAmount: settings.cash_reward_high || 1000,
+            subscriptionMonths: settings.subscription_months || 3,
+            referralBonus: settings.referral_bonus_amount || 500
+          }
+        });
+      } catch (codeCreateErr) {
+        console.error('Error creating user ReferralCode document during registration:', codeCreateErr);
+      }
+    }
+
+    // If referred, log conversion stage "signed_up" with IP check audits
     if (validCodeDoc && referredByObj) {
       try {
+        const ipHeader = req.headers.get('x-forwarded-for') || '127.0.0.1';
+        const clientIp = ipHeader.split(',')[0].trim();
+
+        let isSelfReferralByIp = false;
+        let flagReason = '';
+
+        const referrerUser = await User.findById(referredByObj.referrerId);
+        if (referrerUser) {
+          const isSelfEmail = referrerUser.email.toLowerCase().trim() === email.toLowerCase().trim();
+          const hasMatchingIp = referrerUser.loginHistory.some(history => history.ip === clientIp);
+          if (isSelfEmail) {
+            isSelfReferralByIp = true;
+            flagReason = 'Prospect email matches referrer email.';
+          } else if (hasMatchingIp) {
+            isSelfReferralByIp = true;
+            flagReason = 'Prospect signup IP matches referrer login history IP.';
+          }
+        }
+
         // Find existing conversion record (e.g. stage "clicked" / "visited")
         let conversion = await ReferralConversion.findOne({
           referral_code: validCodeDoc.code,
@@ -116,6 +226,10 @@ export async function POST(req: Request) {
           conversion.prospect_email = user.email;
           conversion.conversion_stage = 'signed_up';
           conversion.timeline.signed_up_at = new Date();
+          if (isSelfReferralByIp) {
+            conversion.is_flagged = true;
+            conversion.flag_reason = flagReason;
+          }
           await conversion.save();
         } else {
           // Fallback: Create a new conversion entry
@@ -125,6 +239,8 @@ export async function POST(req: Request) {
             prospect_id: user._id,
             prospect_email: user.email,
             conversion_stage: 'signed_up',
+            is_flagged: isSelfReferralByIp,
+            flag_reason: flagReason || undefined,
             timeline: {
               clicked_at: new Date(),
               signed_up_at: new Date()

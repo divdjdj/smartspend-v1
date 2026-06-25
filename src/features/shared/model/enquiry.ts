@@ -8,6 +8,12 @@ export interface IEnquiry extends Document {
   message?: string;
   status: 'pending' | 'contacted' | 'resolved' | 'ignored';
   notes?: string;
+  referralCode?: string;
+  referredBy?: {
+    referrerId?: mongoose.Types.ObjectId;
+    referrerEmail?: string;
+  };
+  client_id?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +30,13 @@ const EnquirySchema = new Schema<IEnquiry>({
     default: 'pending',
     index: true
   },
-  notes: { type: String, trim: true }
+  notes: { type: String, trim: true },
+  referralCode: { type: String, uppercase: true, trim: true },
+  referredBy: {
+    referrerId: { type: Schema.Types.ObjectId, ref: 'User' },
+    referrerEmail: { type: String }
+  },
+  client_id: { type: Schema.Types.ObjectId, ref: 'User', index: true }
 }, {
   timestamps: true
 });

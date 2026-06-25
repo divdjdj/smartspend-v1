@@ -57,6 +57,8 @@ export async function GET(req: Request) {
         metadata: c.metadata,
         purchaseDetails: c.purchase_details,
         referrerReward: c.referrer_reward,
+        isFlagged: c.is_flagged,
+        flagReason: c.flag_reason,
         createdAt: c.createdAt,
         referrer: referrer ? {
           name: `${referrer.firstName || ''} ${referrer.lastName || ''}`.trim() || referrer.email,

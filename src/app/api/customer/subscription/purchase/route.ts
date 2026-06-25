@@ -7,6 +7,7 @@ import ReferralCode from '@/features/shared/model/referral-code';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
 import ReferralReward, { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
+import { sendReferralEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
@@ -20,6 +21,25 @@ export async function POST(req: Request) {
 
     if (!packageName || isNaN(originalPrice) || originalPrice <= 0) {
       return NextResponse.json({ error: 'Package name and valid original price are required.' }, { status: 400 });
+    }
+
+    // Verify against a server-side catalog to prevent client pricing tampering
+    const PACKAGE_PRICES: Record<string, number> = {
+      'cursor pro': 4500,
+      'chatgpt plus': 2500,
+      'linkedin sales navigator': 6500,
+      'linkedin sales nav': 6500 // fallback alias used in option value
+    };
+
+    const normalizedPackage = packageName.trim().toLowerCase();
+    const expectedPrice = PACKAGE_PRICES[normalizedPackage];
+
+    if (!expectedPrice) {
+      return NextResponse.json({ error: `Invalid subscription package: "${packageName}"` }, { status: 400 });
+    }
+
+    if (originalPrice !== expectedPrice) {
+      return NextResponse.json({ error: `Tampered checkout price for "${packageName}". Expected: ₹${expectedPrice}` }, { status: 400 });
     }
 
     await connectDB();
@@ -190,13 +210,15 @@ export async function POST(req: Request) {
             });
           }
 
-          // Mock sending email notification by logging to console
-          console.log('\n========================================');
-          console.log(`[DEV EMAIL] Referral Purchase Reward Credited!`);
-          console.log(`Referrer: ${referrerUser.email} has earned a reward!`);
-          console.log(`Reward details: ${rewardType === 'cash' ? `₹${rewardAmount} Cash` : `${rewardMonths} Free Subscription Months`}`);
-          console.log(`Prospect email: ${user.email} completed purchase of ${packageName}`);
-          console.log('========================================\n');
+          // Send real email notification via mail module pipeline
+          const emailSubject = 'You earned a SpentSmart referral reward!';
+          const emailHtml = `
+            <p>Hello,</p>
+            <p>Great news! Your friend <strong>${user.email}</strong> just completed a purchase of <strong>${packageName}</strong> using your referral link.</p>
+            <p>You have earned: <strong>${rewardType === 'cash' ? `₹${rewardAmount} Cash` : `${rewardMonths} Free Months Extension`}</strong>.</p>
+            <p>The reward has been credited directly to your account. Check your dashboard for details.</p>
+          `;
+          await sendReferralEmail(referrerUser.email, emailSubject, emailHtml);
         }
       } catch (refErr) {
         console.error('Error processing referrer reward during simulated purchase:', refErr);

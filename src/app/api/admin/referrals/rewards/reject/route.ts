@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import ReferralReward from '@/features/shared/model/referral-reward';
+import User from '@/features/shared/model/user';
+import { sendReferralEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
@@ -37,6 +39,16 @@ export async function POST(req: Request) {
     // Update status to failed (rejected)
     redemption.status = 'failed';
     await ledger.save();
+
+    const user = await User.findById(customerId);
+    if (user) {
+      // Send Email Notification
+      await sendReferralEmail(
+        user.email,
+        'Your withdrawal claim request was rejected',
+        `<p>Hello,</p><p>We regret to inform you that your cash claim request for <strong>₹${redemption.amount || 0}</strong> has been rejected by our administration team.</p><p>Reason: <em>${reason || 'Self-referral or mismatch flagged during transaction review.'}</em></p>`
+      );
+    }
 
     console.log(`[ADMIN ACTION] Redemption rejected for customer ${customerId}. Reason: ${reason || 'No reason provided'}`);
 

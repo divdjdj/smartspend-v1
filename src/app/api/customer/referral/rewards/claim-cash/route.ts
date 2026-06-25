@@ -5,6 +5,8 @@ import connectDB from '@/lib/mongodb';
 import User from '@/features/shared/model/user';
 import { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
+import { processPayoutTransfer } from '@/features/shared/services/payout';
+import { sendReferralEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
@@ -49,6 +51,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'User account not found.' }, { status: 404 });
       }
 
+      // Execute Payout Transfer via payment gateway
+      const payoutResult = await processPayoutTransfer(user.email, claimAmount);
+      if (!payoutResult.success) {
+        return NextResponse.json({ error: payoutResult.error || 'Failed to process cash payout transfer.' }, { status: 500 });
+      }
+
       user.accountBalance = (user.accountBalance || 0) + claimAmount;
       await user.save();
 
@@ -62,12 +70,21 @@ export async function POST(req: Request) {
       });
       await ledger.save();
 
+      // Send Email Notification
+      await sendReferralEmail(
+        user.email,
+        'Your cash reward payout has been completed!',
+        `<p>Hello,</p><p>We have successfully processed your withdrawal request of <strong>₹${claimAmount}</strong>.</p><p>The cash has been disbursed to your account balance. Transfer ID: <code>${payoutResult.transferId}</code>.</p>`
+      );
+
       return NextResponse.json({
         success: true,
         status: 'completed',
         message: `Successfully claimed ₹${claimAmount}. It has been auto-credited to your account balance!`
       });
     } else {
+      const user = await User.findById(session.user.id);
+
       // Mark as pending for admin approval
       ledger.redemptions.push({
         type: 'cash_claim',
@@ -77,6 +94,14 @@ export async function POST(req: Request) {
         created_at: new Date()
       });
       await ledger.save();
+
+      if (user) {
+        await sendReferralEmail(
+          user.email,
+          'Your cash claim request has been submitted',
+          `<p>Hello,</p><p>Your withdrawal claim request for <strong>₹${claimAmount}</strong> has been submitted. It is now awaiting administrative approval.</p>`
+        );
+      }
 
       return NextResponse.json({
         success: true,

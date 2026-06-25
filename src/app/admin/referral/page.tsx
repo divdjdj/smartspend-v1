@@ -97,6 +97,8 @@ interface ConversionItem {
   };
   referrer: { name: string; email: string } | null;
   prospect: { name: string; email: string } | null;
+  isFlagged?: boolean;
+  flagReason?: string;
   createdAt?: string;
 }
 
@@ -334,8 +336,8 @@ export default function AdminReferralsPage() {
       } else {
         throw new Error(data.error || "Creation failed.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create code.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create code.");
     } finally {
       setCreatingCode(false);
     }
@@ -364,8 +366,8 @@ export default function AdminReferralsPage() {
         const d = await res.json();
         throw new Error(d.error || "Approval failed.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to approve reward.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to approve reward.");
     } finally {
       setProcessingRewardId(null);
     }
@@ -416,8 +418,8 @@ export default function AdminReferralsPage() {
       } else {
         throw new Error(data.error || "Update failed.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update configuration.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update configuration.");
     } finally {
       setUpdatingSettings(false);
     }
@@ -873,7 +875,17 @@ export default function AdminReferralsPage() {
                             <td className="px-6 py-4">
                               {c.prospect ? (
                                 <div>
-                                  <div className="font-semibold text-foreground text-xs">{c.prospect.name}</div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-semibold text-foreground text-xs">{c.prospect.name}</span>
+                                    {c.isFlagged && (
+                                      <span 
+                                        className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-destructive/15 text-destructive border border-destructive/10 cursor-help" 
+                                        title={c.flagReason}
+                                      >
+                                        Flagged
+                                      </span>
+                                    )}
+                                  </div>
                                   <div className="text-[10px] text-muted-foreground">{c.prospect.email}</div>
                                 </div>
                               ) : (

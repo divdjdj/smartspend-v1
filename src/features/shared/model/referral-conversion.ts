@@ -5,7 +5,7 @@ export interface IReferralConversion extends Document {
   referrer_id: mongoose.Types.ObjectId;
   prospect_id?: mongoose.Types.ObjectId;
   prospect_email?: string;
-  conversion_stage: 'clicked' | 'visited' | 'signed_up' | 'purchased' | 'cancelled';
+  conversion_stage: 'clicked' | 'visited' | 'enquired' | 'signed_up' | 'purchased' | 'cancelled';
   timeline: {
     clicked_at?: Date;
     visited_at?: Date;
@@ -32,6 +32,8 @@ export interface IReferralConversion extends Document {
     status: 'calculated' | 'credited' | 'claimed';
     claimed_at?: Date;
   };
+  is_flagged?: boolean;
+  flag_reason?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -43,7 +45,7 @@ const ReferralConversionSchema = new Schema<IReferralConversion>({
   prospect_email: { type: String, trim: true },
   conversion_stage: { 
     type: String, 
-    enum: ['clicked', 'visited', 'signed_up', 'purchased', 'cancelled'], 
+    enum: ['clicked', 'visited', 'enquired', 'signed_up', 'purchased', 'cancelled'], 
     default: 'clicked',
     index: true
   },
@@ -72,7 +74,9 @@ const ReferralConversionSchema = new Schema<IReferralConversion>({
     amount: { type: Number },
     status: { type: String, enum: ['calculated', 'credited', 'claimed'], default: 'calculated' },
     claimed_at: { type: Date }
-  }
+  },
+  is_flagged: { type: Boolean, default: false },
+  flag_reason: { type: String }
 }, {
   timestamps: true
 });

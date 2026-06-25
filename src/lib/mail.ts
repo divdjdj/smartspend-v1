@@ -85,3 +85,41 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
     return false;
   }
 }
+
+export async function sendReferralEmail(email: string, subject: string, htmlContent: string): Promise<boolean> {
+  if (!resend) {
+    console.log('\n========================================');
+    console.log(`[DEV EMAIL] Referral notification to: ${email}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`HTML Body Content:`);
+    console.log(htmlContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim());
+    console.log('========================================\n');
+    return true;
+  }
+
+  try {
+    const data = await resend.emails.send({
+      from: `SpentSmart <${fromEmail}>`,
+      to: email,
+      subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #0f766e; margin-bottom: 24px;">SpentSmart Referral Update</h2>
+          ${htmlContent}
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
+          <p style="color: #94a3b8; font-size: 11px;">You received this email because of referral activity on your SpentSmart account.</p>
+        </div>
+      `
+    });
+
+    if (data.error) {
+      console.error('Failed to send referral email via Resend:', data.error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Error sending referral email:', error);
+    return false;
+  }
+}
+

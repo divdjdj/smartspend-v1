@@ -175,8 +175,8 @@ export default function ClientReferralPage() {
       } else {
         throw new Error(data.error || "Generation failed.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Failed to generate code.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate code.");
     } finally {
       setGeneratingCode(false);
     }
@@ -211,8 +211,8 @@ export default function ClientReferralPage() {
       } else {
         throw new Error(data.error || "Claim failed.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Could not process claim.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not process claim.");
     } finally {
       setClaiming(false);
     }
@@ -238,8 +238,8 @@ export default function ClientReferralPage() {
       } else {
         throw new Error(data.error || "Failed to extend subscription.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Could not apply extension.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not apply extension.");
     } finally {
       setExtending(false);
     }
@@ -269,8 +269,8 @@ export default function ClientReferralPage() {
       } else {
         throw new Error(data.error || "Purchase simulation failed.");
       }
-    } catch (err: any) {
-      toast.error(err.message || "Simulation error.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Simulation error.");
     } finally {
       setSimulating(false);
     }

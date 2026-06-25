@@ -34,13 +34,18 @@ export const authOptions: NextAuthOptions = {
 
         await connectDB();
 
-        // Retrieve user and explicitly select password and lock fields
+        const loginIdentifier = credentials.email.toLowerCase().trim();
+
+        // Retrieve user by email OR phone number
         const user = await User.findOne({ 
-          email: credentials.email.toLowerCase().trim() 
+          $or: [
+            { email: loginIdentifier },
+            { phone: credentials.email.trim() }
+          ]
         }).select('+password +isSuperAdmin');
 
         if (!user) {
-          throw new Error('Invalid email or password.');
+          throw new Error('Invalid email, mobile number, or password.');
         }
 
         // Check if account is locked

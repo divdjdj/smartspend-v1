@@ -4,6 +4,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/features/shared/model/user';
 import ReferralReward from '@/features/shared/model/referral-reward';
+import { processPayoutTransfer } from '@/features/shared/services/payout';
+import { sendReferralEmail } from '@/lib/mail';
 
 export async function POST(req: Request) {
   try {
@@ -42,9 +44,22 @@ export async function POST(req: Request) {
 
     // Process based on type
     if (redemption.type === 'cash_claim') {
+      // Execute payout transfer via payment gateway
+      const payoutResult = await processPayoutTransfer(user.email, redemption.amount);
+      if (!payoutResult.success) {
+        return NextResponse.json({ error: payoutResult.error || 'Failed to process cash payout transfer.' }, { status: 500 });
+      }
+
       // Credit to user's account balance
       user.accountBalance = (user.accountBalance || 0) + redemption.amount;
       await user.save();
+
+      // Send Email Notification
+      await sendReferralEmail(
+        user.email,
+        'Your cash reward claim has been approved!',
+        `<p>Hello,</p><p>Great news! Administrative review is complete and your cash withdrawal of <strong>₹${redemption.amount}</strong> has been approved.</p><p>Transfer ID: <code>${payoutResult.transferId}</code>.</p>`
+      );
     } else if (redemption.type === 'subscription_activation') {
       // Find and extend active subscription
       const activeSubs = user.subscriptions.filter(s => s.status === 'active' && s.endDate > new Date());
@@ -56,6 +71,13 @@ export async function POST(req: Request) {
       const currentEnd = new Date(sub.endDate);
       sub.endDate = new Date(currentEnd.setMonth(currentEnd.getMonth() + redemption.months));
       await user.save();
+
+      // Send Email Notification
+      await sendReferralEmail(
+        user.email,
+        'Your subscription extension has been approved!',
+        `<p>Hello,</p><p>Great news! Administrative review is complete and your subscription extension of <strong>${redemption.months} free months</strong> has been applied to your <strong>${sub.packageName}</strong> subscription.</p>`
+      );
     }
 
     // Update redemption status
