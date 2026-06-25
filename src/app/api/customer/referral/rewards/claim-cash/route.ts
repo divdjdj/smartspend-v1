@@ -7,6 +7,7 @@ import { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
 import { processPayoutTransfer } from '@/features/shared/services/payout';
 import { sendReferralEmail } from '@/lib/mail';
+import { createNotification } from '@/lib/notification';
 
 export async function POST(req: Request) {
   try {

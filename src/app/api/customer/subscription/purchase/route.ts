@@ -8,6 +8,7 @@ import ReferralConversion from '@/features/shared/model/referral-conversion';
 import ReferralReward, { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
 import { sendReferralEmail } from '@/lib/mail';
+import { createNotification } from '@/lib/notification';
 
 export async function POST(req: Request) {
   try {
@@ -82,6 +83,30 @@ export async function POST(req: Request) {
     });
 
     await user.save();
+
+    // Trigger in-app notifications for buyer and admins
+    try {
+      await createNotification({
+        recipientId: user._id,
+        title: 'Subscription Activated! 💳',
+        message: `Your subscription to ${packageName} is now active. Validity: ${new Date(endDate).toLocaleDateString('en-IN')}.`,
+        type: 'subscription',
+        actionUrl: '/client/dashboard'
+      });
+
+      const admins = await User.find({ role: 'admin' });
+      for (const admin of admins) {
+        await createNotification({
+          recipientId: admin._id,
+          title: 'New Subscription Purchase 💰',
+          message: `${user.fullName || user.email} purchased a subscription for ${packageName} (Net Paid: ₹${netAmount}).`,
+          type: 'subscription',
+          actionUrl: '/admin/clients'
+        });
+      }
+    } catch (notifErr) {
+      console.error('Error triggering purchase in-app notifications:', notifErr);
+    }
 
     // Process referrer reward if referral was applied
     if (referralApplied && referrerId) {
@@ -219,6 +244,15 @@ export async function POST(req: Request) {
             <p>The reward has been credited directly to your account. Check your dashboard for details.</p>
           `;
           await sendReferralEmail(referrerUser.email, emailSubject, emailHtml);
+
+          // Trigger in-app notification to referrer
+          await createNotification({
+            recipientId: referrerId,
+            title: 'Referral Reward Earned! 🎁',
+            message: `Your friend ${user.fullName || user.email} just purchased ${packageName}. You've earned ${rewardType === 'cash' ? `₹${rewardAmount} Cash` : `${rewardMonths} Months free subscription extension`}!`,
+            type: 'reward',
+            actionUrl: '/client/referral'
+          });
         }
       } catch (refErr) {
         console.error('Error processing referrer reward during simulated purchase:', refErr);

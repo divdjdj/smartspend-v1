@@ -6,6 +6,7 @@ import ReferralConversion from '@/features/shared/model/referral-conversion';
 import { getOrCreateRewardLedger } from '@/features/shared/model/referral-reward';
 import { getReferralSettings } from '@/features/shared/model/referral-setting';
 import { cookies } from 'next/headers';
+import { createNotification } from '@/lib/notification';
 
 export async function POST(req: Request) {
   try {
@@ -159,6 +160,30 @@ export async function POST(req: Request) {
       await ledger.save();
     } catch (err) {
       console.error('Error seeding ledger for lead:', err);
+    }
+
+    // Trigger in-app notifications
+    try {
+      await createNotification({
+        recipientId: user._id,
+        title: 'Welcome to SpendSmart! 🎉',
+        message: `Your account was created successfully. We've initialized your profile with a signup discount reward!`,
+        type: 'reward',
+        actionUrl: '/client/referral'
+      });
+
+      const admins = await User.find({ role: 'admin' });
+      for (const admin of admins) {
+        await createNotification({
+          recipientId: admin._id,
+          title: 'New Client Registered',
+          message: `${user.fullName} (${user.email}) registered as a new lead.`,
+          type: 'system',
+          actionUrl: '/admin/clients'
+        });
+      }
+    } catch (err) {
+      console.error('Error triggering lead signup notifications:', err);
     }
 
     // Create conversion funnel logs as stage 'visited' / 'signed_up'
