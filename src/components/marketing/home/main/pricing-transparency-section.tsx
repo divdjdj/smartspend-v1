@@ -35,7 +35,7 @@ export function PricingTransparencySection() {
           <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" /> Pricing Transparency
           </span>
-          <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          <h2 className="mt-5 font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-4xl">
             How Are Our <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">Prices Lower?</span>
           </h2>
           <p className="mt-4 text-base text-muted-foreground sm:text-lg">

@@ -1,36 +1,15 @@
-import { MessageCircle, Gift, Mail, Rocket, LifeBuoy } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/marketing/layout/site-chrome";
 import { FaqItem } from "@/components/marketing/home/faq-item";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "How It Works & FAQs — SpendSmart Subscriptions",
-  description: "Learn how SpendSmart Subscriptions activate premium subscriptions on your own account via official gift vouchers and email-based activation. Read our FAQs.",
+  title: "Frequently Asked Questions — SpendSmart Subscriptions",
+  description: "Read our FAQs to learn about activation, renewals, safety, and legitimacy of our premium subscriptions.",
   openGraph: {
-    title: "How It Works — SpendSmart Subscriptions",
-    description: "Three simple steps: raise an inquiry, receive activation details, start using your subscription.",
+    title: "FAQs — SpendSmart Subscriptions",
+    description: "Get answers to common questions about activations, renewals, and refunds.",
   },
 };
-
-const STEPS = [
-  {
-    icon: Gift,
-    title: "Receive Your Activation Details",
-    desc:
-      "Once your subscription is confirmed, you will either receive an activation gift voucher link or be asked to share your email ID, depending on the subscription.",
-  },
-  {
-    icon: Mail,
-    title: "Activate Your Subscription",
-    desc:
-      "Gift Voucher Activation: You will receive an activation link along with simple instructions. Just follow the steps provided and redeem the voucher on the respective platform — in most cases, it only takes a few clicks. Email-Based Activation: For certain subscriptions, you only need to share your email ID, and our team will complete the activation for you.",
-  },
-  {
-    icon: Rocket,
-    title: "Start Using Your Subscription",
-    desc: "Once activated, you can immediately access and enjoy all the benefits of your subscription.",
-  },
-];
 
 const FAQS = [
   {
@@ -87,74 +66,26 @@ const FAQS = [
   },
 ];
 
-export default function HowItWorksPage() {
+export default function FaqPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-border bg-gradient-hero">
-          <div className="mx-auto max-w-5xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-            <p className="font-display text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              How it works
-            </p>
-            <h1 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-              Getting started is <span className="text-gradient">simple.</span>
+        {/* HERO SECTION */}
+        <section className="relative overflow-hidden border-b border-border bg-gradient-hero py-12 sm:py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              Frequently Asked <span className="bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent font-extrabold">Questions</span>
             </h1>
-            <p className="mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-              Once you raise an inquiry through our website, WhatsApp, email, or any of our official
-              channels, our team will connect with you to understand your subscription requirements
-              and provide the most suitable solution based on your needs.
+            <p className="mt-5 max-w-2xl mx-auto text-base text-muted-foreground sm:text-lg">
+              Everything you need to know about our activations, legitimacy, validity, and renewal process.
             </p>
           </div>
         </section>
 
-        <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
-          <div className="grid gap-6 md:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <div key={s.title} className="rounded-2xl border border-border bg-card p-6 shadow-card">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-brand text-primary-foreground shadow-soft">
-                    <s.icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-xs font-bold tracking-wider text-gradient">
-                    STEP {String(i + 1).padStart(2, "0")}
-                  </div>
-                </div>
-                <h3 className="mt-4 font-display text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10 flex items-start gap-4 rounded-2xl border border-primary/30 bg-secondary/60 p-6 shadow-soft">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-card text-primary">
-              <LifeBuoy className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-display text-lg font-semibold">Need Help?</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                If you face any issues during the activation process, our team will be available to
-                guide and assist you at every step.
-              </p>
-              <a
-                href="https://wa.me/918770066995?text=Hi%2C%20I%20need%20help%20with%20activation"
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-gradient-brand px-4 py-2 text-xs font-semibold text-primary-foreground shadow-soft"
-              >
-                <MessageCircle className="h-3.5 w-3.5" /> Chat with our team
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <section id="faq" className="mx-auto max-w-4xl px-4 pb-20 sm:px-6 lg:px-8">
-          <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Frequently Asked Questions
-          </h2>
-          <p className="mt-2 text-muted-foreground">Everything you need to know before getting started.</p>
-
-          <div className="mt-8 space-y-3">
+        {/* QUESTIONS GRID/ACCORDION */}
+        <section className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="space-y-3">
             {FAQS.map((f, i) => (
               <FaqItem key={i} q={f.q} a={f.a} />
             ))}

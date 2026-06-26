@@ -1,38 +1,54 @@
 "use client";
-
+ 
 import { useState } from "react";
-import { Send, Loader2, AlertCircle, User, Mail, Phone, MessageSquare, ChevronDown, Tag } from "lucide-react";
+import { Send, Loader2, AlertCircle, User, Phone, MessageSquare, ChevronDown, Tag, Check } from "lucide-react";
 import { ALL_TOOLS } from "@/data/tools";
+import { ToolLogo } from "@/components/marketing/layout/tool-logo";
 import { toast } from "sonner";
-
+ 
 // Deduplicate tool names and filter out invalid values
 const uniqueTools = Array.from(
   new Map(ALL_TOOLS.filter(t => t.name).map(t => [t.name, t])).values()
 );
-
+ 
 const CATEGORY_LABELS: Record<string, string> = {
-  AI: "AI & Assistants",
-  Developer: "Developer & Coding",
-  Creative: "Design & Creative",
-  Professional: "Professional & Learning",
-  Productivity: "Productivity & Collaboration",
-  Credits: "Cloud Credits & APIs",
-  Marketing: "Marketing & Analytics",
+  Developer: "Developer Tools",
+  Creative: "Design & Creative Tools",
+  "Product/Marketing": "Product, Marketing & Growth",
+  "Business/Operations": "Business & Operations",
+  OTT: "OTT Platforms",
+  Credits: "Platform Credits",
 };
 
+const CATEGORY_ORDER = [
+  "Developer Tools",
+  "Design & Creative Tools",
+  "Product, Marketing & Growth",
+  "Business & Operations",
+  "OTT Platforms",
+  "Platform Credits",
+];
+ 
 // Group tools by categories
-const groupedTools = uniqueTools.reduce((acc, tool) => {
+const rawGrouped = uniqueTools.reduce((acc, tool) => {
   const label = CATEGORY_LABELS[tool.category] || "Other Tools";
   if (!acc[label]) acc[label] = [];
-  acc[label].push(tool.name);
+  acc[label].push(tool);
   return acc;
-}, {} as Record<string, string[]>);
-
-// Sort tool names within each category group
-Object.keys(groupedTools).forEach(cat => {
-  groupedTools[cat].sort((a, b) => a.localeCompare(b));
+}, {} as Record<string, typeof uniqueTools>);
+ 
+// Sort tools within each category group
+Object.keys(rawGrouped).forEach(cat => {
+  rawGrouped[cat].sort((a, b) => a.name.localeCompare(b.name));
 });
 
+// Sort categories by the defined order
+const groupedTools = Object.entries(rawGrouped).sort((a, b) => {
+  const idxA = CATEGORY_ORDER.indexOf(a[0]);
+  const idxB = CATEGORY_ORDER.indexOf(b[0]);
+  return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+});
+ 
 // Robust phone validator that returns validation status, clean form for WhatsApp link, and visual display formatting
 function cleanAndValidatePhone(phone: string) {
   const rawClean = phone.trim().replace(/[\s\-()]/g, "");
@@ -86,26 +102,30 @@ function cleanAndValidatePhone(phone: string) {
     formatted: phone
   };
 }
+ 
+interface InquiryFormProps {
+  onSuccess?: () => void;
+}
 
-export function InquiryForm() {
+export function InquiryForm({ onSuccess }: InquiryFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
-    email: "",
-    subscription: "",
     message: "",
   });
-
+ 
+  const [selectedSubs, setSelectedSubs] = useState<string[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileError, setMobileError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-
+ 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-
+ 
     if (name === "mobile") {
       if (value.trim() === "") {
         setMobileError("Mobile number is required.");
@@ -119,76 +139,83 @@ export function InquiryForm() {
       }
     }
   };
-
+ 
+  const handleAllToggle = () => {
+    setSelectedSubs(prev =>
+      prev.includes("Interested in All Subscriptions")
+        ? []
+        : ["Interested in All Subscriptions"]
+    );
+  };
+ 
+  const handleToolToggle = (toolName: string) => {
+    setSelectedSubs(prev =>
+      prev.includes(toolName)
+        ? prev.filter(t => t !== toolName)
+        : [...prev.filter(t => t !== "Interested in All Subscriptions"), toolName]
+    );
+  };
+ 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMobileError("");
-
+ 
     const name = formData.name.trim();
     const mobile = formData.mobile.trim();
-    const email = formData.email.trim();
-    const subscription = formData.subscription;
     const message = formData.message.trim();
-
+    const subscriptionList = selectedSubs.join(", ");
+ 
     if (!name) {
       toast.error("Please enter your name.");
       return;
     }
-
+ 
     const phoneValidation = cleanAndValidatePhone(mobile);
     if (!mobile || !phoneValidation.isValid) {
       setMobileError("Please enter a valid mobile number.");
       toast.error("Invalid mobile number provided.");
       return;
     }
-
+ 
+    if (selectedSubs.length === 0) {
+      toast.error("Please select at least one subscription.");
+      return;
+    }
+ 
     setSubmitting(true);
-
+ 
     try {
-      // 1. Submit to MongoDB database
+      // Submit to MongoDB database
       const res = await fetch("/api/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
           mobile: phoneValidation.formatted,
-          email: email || undefined,
-          subscription: subscription || undefined,
+          subscription: subscriptionList || undefined,
           message: message || undefined,
         }),
       });
-
+ 
       const data = await res.json();
-
+ 
       if (!res.ok) {
         throw new Error(data.error || "Failed to submit enquiry.");
       }
-
+ 
       toast.success("Enquiry saved successfully!");
       setSubmitted(true);
-
-      // 2. Open WhatsApp support link in a new tab
-      const whatsappMsg =
-        `Hi, I'd like to enquire about a subscription.\n\n` +
-        `*Name:* ${name}\n` +
-        `*Mobile:* ${phoneValidation.formatted}\n` +
-        (email ? `*Email:* ${email}\n` : "") +
-        (subscription ? `*Interested In:* ${subscription}\n` : "") +
-        (message ? `*Message:* ${message}\n` : "");
-
-      const encodedMsg = encodeURIComponent(whatsappMsg);
-      
-      // Target support WhatsApp number is 918770066995
-      window.open(`https://wa.me/918770066995?text=${encodedMsg}`, "_blank");
-
+      if (onSuccess) {
+        onSuccess();
+      }
+ 
       // Reset form
       setFormData({
         name: "",
         mobile: "",
-        email: "",
-        subscription: "",
         message: "",
       });
+      setSelectedSubs([]);
       
     } catch (err: unknown) {
       console.error(err);
@@ -197,7 +224,21 @@ export function InquiryForm() {
       setSubmitting(false);
     }
   };
-
+ 
+  if (submitted) {
+    return (
+      <div className="border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-md rounded-2xl p-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-300">
+        <div className="inline-flex h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 items-center justify-center shadow-soft">
+          <Check className="h-6 w-6" />
+        </div>
+        <h3 className="font-display font-extrabold text-lg text-foreground">Submitted Successfully!</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+          Thank you for reaching out. Our team will contact you shortly.
+        </p>
+      </div>
+    );
+  }
+ 
   return (
     <form onSubmit={onSubmit} className="mt-4 space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
@@ -221,7 +262,7 @@ export function InquiryForm() {
             />
           </div>
         </div>
-
+ 
         <div className="group">
           <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
             Mobile Number <span className="text-brand font-bold">*</span>
@@ -253,64 +294,100 @@ export function InquiryForm() {
           )}
         </div>
       </div>
-
-      <div className="group">
+ 
+      <div className="group relative">
         <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
-          Email (optional)
+          Select Subscription <span className="text-brand font-bold">*</span>
         </label>
-        <div className="relative">
+        <button
+          type="button"
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          className="w-full text-left pl-10 pr-10 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 cursor-pointer shadow-sm relative h-12"
+        >
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-            <Mail className="h-4 w-4 text-muted-foreground/50 transition-colors group-focus-within:text-brand" />
+            <Tag className="h-4 w-4 text-muted-foreground/50" />
           </span>
-          <input
-            name="email"
-            type="email"
-            placeholder="you@example.com"
-            maxLength={255}
-            value={formData.email}
-            onChange={handleInputChange}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground placeholder:text-muted-foreground/45 focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 shadow-sm"
-          />
-        </div>
-      </div>
-
-      <div className="group">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
-          Subscription Interested In
-        </label>
-        <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-            <Tag className="h-4 w-4 text-muted-foreground/50 transition-colors group-focus-within:text-brand" />
+          <span className="block truncate">
+            {selectedSubs.length === 0
+              ? "Select Subscription(s)"
+              : selectedSubs.includes("Interested in All Subscriptions")
+              ? "Interested in All Subscriptions"
+              : selectedSubs.map(s => s === "Other" ? "Others" : s).join(", ")}
           </span>
-          <select
-            name="subscription"
-            value={formData.subscription}
-            onChange={handleInputChange}
-            className="w-full pl-10 pr-10 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 appearance-none cursor-pointer shadow-sm"
-          >
-            <option value="" className="bg-background text-foreground">Select a subscription</option>
-            {Object.entries(groupedTools).map(([category, tools]) => (
-              <optgroup key={category} label={category} className="bg-background text-foreground font-semibold">
-                {tools.map(toolName => (
-                  <option key={toolName} value={toolName} className="font-normal bg-background text-foreground">
-                    {toolName}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-            <optgroup label="Other Options" className="bg-background text-foreground font-semibold">
-              <option value="Other" className="bg-background text-foreground">Other Subscription</option>
-            </optgroup>
-          </select>
           <span className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-            <ChevronDown className="h-4 w-4 text-muted-foreground/50 transition-colors group-focus-within:text-brand" />
+            <ChevronDown className={`h-4 w-4 text-muted-foreground/50 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
           </span>
-        </div>
-      </div>
+        </button>
+ 
+        {dropdownOpen && (
+          <div 
+            className="absolute z-20 mt-1.5 w-full max-h-60 overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-xl animate-in slide-in-from-top-1 duration-200"
+            onMouseLeave={() => setDropdownOpen(false)}
+          >
+            <label className="flex items-center gap-2.5 px-2 py-1.5 hover:bg-secondary/40 rounded-lg cursor-pointer text-sm font-semibold mb-2 text-primary border-b border-border/10 pb-2">
+              <input
+                type="checkbox"
+                checked={selectedSubs.includes("Interested in All Subscriptions")}
+                onChange={handleAllToggle}
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+              />
+              <span>Interested in All Subscriptions</span>
+            </label>
+            
+            {groupedTools.map(([category, tools]) => (
+              <div key={category} className="space-y-1 mt-2">
+                <div className="text-[10px] uppercase font-bold text-muted-foreground/60 px-2 py-0.5 tracking-wider">
+                  {category}
+                </div>
+                {tools.map(tool => {
+                  const checked = selectedSubs.includes(tool.name);
+                  const isDisabled = selectedSubs.includes("Interested in All Subscriptions");
+                  return (
+                    <label
+                      key={tool.name}
+                      className={`flex items-center gap-2.5 px-2.5 py-1.5 hover:bg-secondary/30 rounded-lg cursor-pointer text-xs ${
+                        isDisabled ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked && !isDisabled}
+                        disabled={isDisabled}
+                        onChange={() => handleToolToggle(tool.name)}
+                        className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                      />
+                      <ToolLogo tool={tool} className="h-5 w-5" />
+                      <span className="text-foreground/90 font-medium">{tool.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            ))}
 
+            {/* Other Option */}
+            <div className="space-y-1 mt-2 border-t border-border/10 pt-2">
+              <label
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 hover:bg-secondary/30 rounded-lg cursor-pointer text-xs ${
+                  selectedSubs.includes("Interested in All Subscriptions") ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSubs.includes("Other") && !selectedSubs.includes("Interested in All Subscriptions")}
+                  disabled={selectedSubs.includes("Interested in All Subscriptions")}
+                  onChange={() => handleToolToggle("Other")}
+                  className="h-3.5 w-3.5 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                />
+                <span className="text-foreground/90 font-medium">Others</span>
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
+ 
       <div className="group">
         <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
-          Message (optional)
+          What exactly are you looking for?
         </label>
         <div className="relative">
           <span className="absolute left-3.5 top-[14px] flex items-center justify-center pointer-events-none">
@@ -320,14 +397,14 @@ export function InquiryForm() {
             name="message"
             rows={3}
             maxLength={500}
-            placeholder="Tell us anything else we should know…"
+            placeholder="Tell us what you need..."
             value={formData.message}
             onChange={handleInputChange}
             className="w-full pl-10 pr-4 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground placeholder:text-muted-foreground/45 focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 resize-none shadow-sm"
           />
         </div>
       </div>
-
+ 
       <button
         type="submit"
         disabled={submitting || !!mobileError}
@@ -336,20 +413,15 @@ export function InquiryForm() {
         {submitting ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin text-primary-foreground" />
-            Saving Enquiry...
+            Submitting...
           </>
         ) : (
           <>
             <Send className="h-4 w-4 text-primary-foreground" />
-            {submitted ? "Book Another Call" : "Book a Call"}
+            Submit
           </>
         )}
       </button>
-      
-      <p className="text-center text-[11px] text-muted-foreground/80 leading-normal">
-        Your enquiry will be saved securely, and we will direct you to our WhatsApp support team for instant booking.
-      </p>
     </form>
   );
 }
-

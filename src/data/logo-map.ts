@@ -95,6 +95,13 @@ import replicaiLogo from "@/assets/logos/replicai.png";
 import replitLogo from "@/assets/logos/replit.png";
 import supabaseProLogo from "@/assets/logos/supabase-pro.png";
 import whisperFlowLogo from "@/assets/logos/whisper-flow.png";
+import grokLogo from "@/assets/logos/grok.svg";
+import firecrawlLogo from "@/assets/logos/firecrawl.svg";
+import claudeLogo from "@/assets/logos/claude.svg";
+import v0Logo from "@/assets/logos/v0.svg";
+import chatgptSvg from "@/assets/logos/chatgpt.svg";
+import geminiSvg from "@/assets/logos/gemini.svg";
+import elevenLabsSvg from "@/assets/logos/eleven-labs.svg";
 
 export const LOGOS: Record<string, unknown> = {
   "adobe-cc": adobeCcLogo,
@@ -104,18 +111,20 @@ export const LOGOS: Record<string, unknown> = {
   "aws-credits": awsCreditsLogo,
   "bolt": boltLogo,
   "canva-pro": canvaProLogo,
-  "chatgpt-plus": chatgptPlusLogo,
+  "chatgpt-plus": chatgptSvg,
   "chatgpt-pro": chatgptProLogo,
-  "claude-pro": claudeProLogo,
+  "claude-pro": claudeLogo,
   "cloud-pro": cloudProLogo,
   "coursera": courseraLogo,
   "cursor-pro": cursorProLogo,
   "descript": descriptLogo,
   "elements": elementsLogo,
-  "eleven-labs": elevenLabsLogo,
+  "eleven-labs": elevenLabsSvg,
   "figma": figmaLogo,
+  "grok": grokLogo,
+  "firecrawl": firecrawlLogo,
   "gamma-pro": gammaProLogo,
-  "gemini-pro": geminiProLogo,
+  "gemini-pro": geminiSvg,
   "github": githubLogo,
   "hootsuite": hootsuiteLogo,
   "invideo": invideoLogo,
@@ -130,7 +139,7 @@ export const LOGOS: Record<string, unknown> = {
   "marquee-canva-business": marqueeCanvaBusinessLogo,
   "marquee-capcut-pro": marqueeCapcutProLogo,
   "marquee-chatprd": marqueeChatprdLogo,
-  "marquee-claude-credits": marqueeClaudeCreditsLogo,
+  "marquee-claude-credits": claudeLogo,
   "marquee-coderabbit-pro": marqueeCoderabbitProLogo,
   "marquee-customer-io": marqueeCustomerIoLogo,
   "marquee-descript": marqueeDescriptLogo,
@@ -178,7 +187,7 @@ export const LOGOS: Record<string, unknown> = {
   "marquee-sony-liv": marqueeSonyLivLogo,
   "marquee-speechify": marqueeSpeechifyLogo,
   "marquee-textshift": marqueeTextshiftLogo,
-  "marquee-v0-credits": marqueeV0CreditsLogo,
+  "marquee-v0-credits": v0Logo,
   "marquee-vapi-credits": marqueeVapiCreditsLogo,
   "marquee-warpbuild": marqueeWarpbuildLogo,
   "marquee-youtube-premium": marqueeYoutubePremiumLogo,

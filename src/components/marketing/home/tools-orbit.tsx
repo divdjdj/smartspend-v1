@@ -4,7 +4,7 @@ import { Tool } from "@/types";
 
 export function ToolsOrbit() {
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[390px] overflow-visible sm:max-w-[560px] lg:max-w-[640px]">
+    <div className="relative mx-auto aspect-square w-full max-w-[340px] overflow-visible sm:max-w-[480px] lg:max-w-[500px] xl:max-w-[560px]">
       {/* Visual ring tracks */}
       <div className="absolute inset-0 rounded-full border border-border/10" />
       <div className="absolute inset-[8%] rounded-full border border-border/10" />
@@ -13,12 +13,16 @@ export function ToolsOrbit() {
       {/* Center piece */}
       <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
         <div className="relative grid h-28 w-28 place-items-center rounded-full bg-card shadow-elegant border border-border sm:h-40 sm:w-40">
-          <div className="relative flex flex-col items-center justify-center text-center">
-            <div className="font-display text-3xl font-extrabold text-primary sm:text-4xl">80+</div>
-            <div className="mt-1 px-2 text-[9px] font-bold uppercase leading-tight tracking-[0.16em] text-muted-foreground sm:text-[10px]">
-              Premium Tools
+          {/* Inner decorative dashed spinning ring */}
+          <div className="absolute inset-1.5 rounded-full border border-dashed border-border/40 animate-orbit-reverse" />
+          
+          <div className="relative flex flex-col items-center justify-center text-center z-10">
+            <div className="font-display text-3.5xl font-extrabold text-gradient leading-none sm:text-4.5xl">80+</div>
+            <div className="mt-1.5 px-1 text-[9px] font-bold uppercase leading-tight tracking-[0.14em] text-muted-foreground sm:text-[10.5px]">
+              Professional &amp; AI
+              <span className="block mt-0.5 text-primary/80">Tools</span>
             </div>
-            <div className="mx-auto mt-1.5 h-[2px] w-8 rounded-full bg-primary" />
+            <div className="mx-auto mt-2 h-[2px] w-8 rounded-full" style={{ backgroundImage: 'var(--gradient-brand)' }} />
           </div>
         </div>
       </div>
