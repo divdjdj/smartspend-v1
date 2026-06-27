@@ -7,7 +7,10 @@ export type Category =
   | "Developer"
   | "Productivity"
   | "Marketing"
-  | "Credits";
+  | "Credits"
+  | "Product/Marketing"
+  | "Business/Operations"
+  | "OTT";
 
 export type Tool = {
   name: string;

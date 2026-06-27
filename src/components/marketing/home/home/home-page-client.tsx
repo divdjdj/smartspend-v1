@@ -6,9 +6,12 @@ import { HeroSection } from "@/components/marketing/home/main/hero-section";
 import { MarqueeSection } from "@/components/marketing/home/main/marquee-section";
 import { TopDemandSection } from "@/components/marketing/home/main/top-demand-section";
 import { PricingTransparencySection } from "@/components/marketing/home/main/pricing-transparency-section";
+import { HowActivationWorksSection } from "@/components/marketing/home/main/how-it-works-section";
 import { WhyChooseUsSection } from "@/components/marketing/home/main/why-choose-us-section";
 import { TestimonialsSection } from "@/components/marketing/home/main/testimonials-section";
 import { ContactSection } from "@/components/marketing/home/main/contact-section";
+import { ReferralProgramSection } from "@/components/marketing/home/main/referral-program-section";
+import { AboutSection } from "@/components/marketing/home/main/about-section";
 
 export function HomePageClient() {
   return (
@@ -21,22 +24,31 @@ export function HomePageClient() {
         {/* LOGO MARQUEE */}
         <MarqueeSection />
 
-        {/* TOP-DEMAND LOGO GRID */}
+        {/* 1. TOP-DEMAND LOGO GRID */}
         <TopDemandSection />
 
-        {/* SUBSCRIPTION WISHLIST */}
+        {/* 2. SUBSCRIPTION WISHLIST & WHATSAPP COMMUNITY */}
         <WishlistSection />
 
-        {/* WHY LOWER PRICES */}
+        {/* ABOUT US */}
+        <AboutSection />
+
+        {/* 4. PRICING TRANSPARENCY */}
         <PricingTransparencySection />
 
-        {/* WHY CHOOSE US */}
-        <WhyChooseUsSection />
+        {/* 5. HOW ACTIVATION WORKS */}
+        <HowActivationWorksSection />
 
-        {/* TESTIMONIALS */}
+        {/* 6. CUSTOMER TESTIMONIALS */}
         <TestimonialsSection />
 
-        {/* GET IN TOUCH */}
+        {/* 7. REFERRAL PROGRAMME */}
+        <ReferralProgramSection />
+
+        {/* 8. WHY CHOOSE US */}
+        <WhyChooseUsSection />
+
+        {/* 9. REACH US */}
         <ContactSection />
       </main>
       <SiteFooter />

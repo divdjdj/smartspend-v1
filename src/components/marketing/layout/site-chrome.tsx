@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Phone } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -42,47 +42,42 @@ export function SiteHeader() {
   return (
     <header className="sticky top-4 z-40 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="relative flex h-16 items-center justify-between px-6 bg-background/90 backdrop-blur-md border border-border/10 rounded-2xl shadow-soft">
-        <Link href="/" className="flex items-center gap-3" aria-label="SpendSmart Subscriptions">
-          <span className="grid h-10 w-10 place-items-center">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="SpendSmart Subscriptions">
+          <span className="relative grid h-9 w-9 shrink-0 place-items-center sm:h-10 sm:w-10">
             <SpendSmartMark />
           </span>
-          <span className="font-display text-base font-extrabold tracking-tight text-foreground leading-none sm:text-lg">
-            SpendSmart
-            <span className="block text-[9px] uppercase tracking-widest text-primary font-bold mt-0.5 leading-none">
+          <span className="flex flex-col">
+            <span className="font-display text-base font-extrabold tracking-tight text-foreground leading-none sm:text-lg">
+              SpendSmart
+            </span>
+            <span className="text-[9px] uppercase tracking-[0.15em] text-primary font-bold mt-1 leading-none">
               Subscriptions
             </span>
           </span>
         </Link>
         
-        <nav className="hidden items-center gap-6 text-sm font-medium text-muted-foreground lg:flex">
+        <nav className="hidden items-center gap-5 text-sm font-semibold text-muted-foreground lg:flex">
           <Link href="/" className="hover:text-primary transition-colors">Home</Link>
           <Link href="/tools" className="hover:text-primary transition-colors">Subscriptions</Link>
-          <Link href="/how-it-works" className="hover:text-primary transition-colors">How It Works</Link>
+          <Link href="/how-prices-are-lower" className="hover:text-primary transition-colors">How Prices Are Lower</Link>
           <Link href="/referral" className="hover:text-primary transition-colors">Referral Program</Link>
           <Link href="/about" className="hover:text-primary transition-colors">About Us</Link>
         </nav>
  
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Desktop Navigation Actions */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2.5">
             <Button
               variant="outline"
               asChild
-              className="rounded-full border-border px-4 h-9 text-xs font-semibold hover:bg-muted"
+              className="rounded-full border-border px-3.5 h-9 text-xs font-semibold hover:bg-muted"
             >
-              <Link href="/login">Login</Link>
-            </Button>
-            <Button
-              variant="outline"
-              asChild
-              className="rounded-full border-border px-4 h-9 text-xs font-semibold hover:bg-muted"
-            >
-              <Link href="/signup">Sign Up</Link>
+              <Link href="/login">Login / Sign Up</Link>
             </Button>
             <Button
               variant="default"
               onClick={() => setIsEnquiryOpen(true)}
-              className="rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 border-0 px-4 h-9 text-xs font-semibold"
+              className="rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 border-0 px-3.5 h-9 text-xs font-semibold"
             >
               <span>Enquire Now</span>
             </Button>
@@ -103,8 +98,8 @@ export function SiteHeader() {
                 <div className="flex flex-col gap-6">
                   <SheetHeader className="p-0 border-b border-border/40 pb-4">
                     <SheetTitle>
-                      <Link href="/" className="flex items-center gap-2.5" aria-label="SpendSmart Subscriptions">
-                        <span className="grid h-10 w-10 place-items-center">
+                      <Link href="/" className="flex items-center gap-2" aria-label="SpendSmart Subscriptions">
+                        <span className="grid h-9 w-9 place-items-center">
                           <SpendSmartMark />
                         </span>
                         <span className="font-display text-base font-extrabold tracking-tight text-foreground">
@@ -114,10 +109,10 @@ export function SiteHeader() {
                       </Link>
                     </SheetTitle>
                   </SheetHeader>
-                  <nav className="flex flex-col gap-4 text-base font-medium">
+                  <nav className="flex flex-col gap-4 text-base font-semibold">
                     <Link href="/" className="hover:text-primary transition-colors py-1">Home</Link>
                     <Link href="/tools" className="hover:text-primary transition-colors py-1">Subscriptions</Link>
-                    <Link href="/how-it-works" className="hover:text-primary transition-colors py-1">How It Works</Link>
+                    <Link href="/how-prices-are-lower" className="hover:text-primary transition-colors py-1">How Prices Are Lower</Link>
                     <Link href="/referral" className="hover:text-primary transition-colors py-1">Referral Program</Link>
                     <Link href="/about" className="hover:text-primary transition-colors py-1">About Us</Link>
                   </nav>
@@ -130,22 +125,13 @@ export function SiteHeader() {
                   >
                     <span>Enquire Now</span>
                   </Button>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      asChild
-                      className="flex-1 rounded-full border-border text-sm font-semibold hover:bg-muted"
-                    >
-                      <Link href="/login">Login</Link>
-                    </Button>
-                    <Button
-                      variant="default"
-                      asChild
-                      className="flex-1 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 border-0 text-sm font-semibold"
-                    >
-                      <Link href="/signup">Sign Up</Link>
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="w-full rounded-full border-border text-sm font-semibold hover:bg-muted"
+                  >
+                    <Link href="/login">Login / Sign Up</Link>
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>
@@ -155,7 +141,7 @@ export function SiteHeader() {
       <Dialog open={isEnquiryOpen} onOpenChange={setIsEnquiryOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold font-display text-center">Submit an Enquiry</DialogTitle>
+            <DialogTitle className="text-xl font-bold font-display text-center">Enquiry Form</DialogTitle>
           </DialogHeader>
           <InquiryForm />
         </DialogContent>
@@ -164,64 +150,43 @@ export function SiteHeader() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({
+  hideWhatsAppBanner = false,
+  hideFloatingSocials = false,
+}: {
+  hideWhatsAppBanner?: boolean;
+  hideFloatingSocials?: boolean;
+}) {
   return (
     <>
-      <FloatingSocials />
+      {!hideFloatingSocials && <FloatingSocials />}
       <footer className="border-t border-border bg-card text-foreground">
-        {/* Top Banner Row */}
-        <div className="border-b border-border/10 bg-soft/10 py-8">
-          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3.5 text-center sm:text-left">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-soft">
-                <WhatsAppIcon className="h-6 w-6" />
-              </span>
-              <div>
-                <p className="font-display text-base font-bold text-foreground">
-                  Join our WhatsApp community
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Early drops, deal alerts, and member-only subscription offers.
-                </p>
-              </div>
-            </div>
-            <a
-              href="https://chat.whatsapp.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-[#25D366] hover:brightness-105 active:scale-[0.99] px-6 py-3 text-sm font-semibold text-white shadow-card transition-all duration-200"
-            >
-              <WhatsAppIcon className="h-4 w-4 fill-current" />
-              Join Community
-            </a>
-          </div>
-        </div>
 
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-12">
             {/* Brand Col */}
-            <div className="lg:col-span-5 space-y-6">
-              <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center">
+            <div className="lg:col-span-5 space-y-4 lg:-mt-2">
+              <Link href="/" className="flex items-center gap-3 select-none">
+                <span className="relative grid h-11 w-11 shrink-0 place-items-center sm:h-12 sm:w-12">
                   <SpendSmartMark />
                 </span>
-                <div className="text-left select-none">
-                  <span className="block font-display font-extrabold text-xl tracking-tight text-foreground leading-none">
+                <span className="flex flex-col">
+                  <span className="font-display text-lg font-extrabold tracking-tight text-foreground leading-none sm:text-xl">
                     SpendSmart
                   </span>
-                  <span className="text-[9px] uppercase tracking-widest text-primary font-bold mt-0.5 leading-none">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-primary font-bold mt-1 leading-none">
                     Subscriptions
                   </span>
-                </div>
-              </div>
+                </span>
+              </Link>
               <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
-                Helping professionals, creators, and businesses access premium AI, productivity,
-                and creative subscriptions at 50%+ lower prices through a seamless gift voucher
+                Helping professionals, creators, and businesses access 80+ professional and AI
+                subscriptions at 50%+ lower prices through a seamless gift voucher
                 activation process across India.
               </p>
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-3 pt-1">
                 <a
-                  href="https://wa.me/918770066995"
+                  href="https://wa.me/918770066995?text=Hi%2C%20I%27m%20looking%20for%20a%20subscription%20from%20your%20website.%20Could%20you%20please%20help%20me%3F"
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Chat on WhatsApp"
@@ -241,6 +206,13 @@ export function SiteFooter() {
                     <path fill="#EA4335" d="M44 13.6c0-1.5-1.2-2.6-2.6-2.6h-1.7L24 22 8.3 11H6.6C5.2 11 4 12.1 4 13.6v2.2l8 6 12 8.7 12-8.7 8-6v-2.2z"/>
                   </svg>
                 </a>
+                <a
+                  href="tel:918770066995"
+                  aria-label="Call Support"
+                  className="grid h-10 w-10 place-items-center rounded-xl bg-soft/40 border border-border/10 text-foreground shadow-soft transition hover:opacity-90 hover:scale-105"
+                >
+                  <Phone className="h-4.5 w-4.5 text-blue-500 fill-none" />
+                </a>
               </div>
             </div>
 
@@ -251,8 +223,9 @@ export function SiteFooter() {
                 <li><Link href="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">Home</Link></li>
                 <li><Link href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
                 <li><Link href="/tools" className="text-sm text-muted-foreground hover:text-primary transition-colors">Subscriptions</Link></li>
-                <li><Link href="/how-it-works" className="text-sm text-muted-foreground hover:text-primary transition-colors">How It Works</Link></li>
+                <li><Link href="/how-prices-are-lower" className="text-sm text-muted-foreground hover:text-primary transition-colors">How Prices Are Lower</Link></li>
                 <li><Link href="/referral" className="text-sm text-muted-foreground hover:text-primary transition-colors">Referral Program</Link></li>
+                <li><Link href="/faq" className="text-sm text-muted-foreground hover:text-primary transition-colors">FAQs</Link></li>
                 <li><Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
               </ul>
             </div>
@@ -264,18 +237,14 @@ export function SiteFooter() {
                 <li><a href="tel:918770066995" className="hover:text-primary transition-colors font-semibold text-foreground">+91 8770066995</a></li>
                 <li><a href="mailto:support@spendsmartsubscriptions.in" className="hover:text-primary transition-colors break-all">support@spendsmartsubscriptions.in</a></li>
                 <li className="text-xs">Mon–Sat, 10 AM – 8 PM IST</li>
-                <li className="text-xs text-muted-foreground/60">SpendSmartSubscriptions.in &bull; Safe & Secure</li>
+                <li className="text-xs text-muted-foreground/60">SpendSmartSubscriptions.in</li>
               </ul>
             </div>
           </div>
 
           {/* Copyright Subfooter */}
-          <div className="mt-16 pt-8 border-t border-border/15 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground/60 gap-4">
+          <div className="mt-16 pt-8 border-t border-border/15 text-center text-xs text-muted-foreground/60">
             <p>© {new Date().getFullYear()} SpendSmart Subscriptions. All rights reserved.</p>
-            <div className="flex items-center gap-6">
-              <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-            </div>
           </div>
         </div>
       </footer>

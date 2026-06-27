@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare } from 'lucide-react';
+import { Phone, ClipboardList } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { InquiryForm } from '@/components/marketing/home/main/inquiry-form';
 
@@ -42,13 +42,19 @@ export function FloatingSocials() {
   const socials = [
     {
       name: 'WhatsApp Support',
-      url: 'https://wa.me/918770066995',
+      url: 'https://wa.me/918770066995?text=Hi%2C%20I%27m%20looking%20for%20a%20subscription%20from%20your%20website.%20Could%20you%20please%20help%20me%3F',
       icon: <WhatsAppIcon className="w-5 h-5 fill-current" />,
       color: 'hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 text-emerald-400 border-emerald-500/20 bg-emerald-500/5',
     },
     {
+      name: 'Call Support',
+      url: 'tel:918770066995',
+      icon: <Phone className="w-5 h-5" />,
+      color: 'hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 text-blue-400 border-blue-500/20 bg-blue-500/5',
+    },
+    {
       name: 'WhatsApp Community',
-      url: 'https://chat.whatsapp.com/',
+      url: 'https://chat.whatsapp.com/JV2dxX7Xyje4K8Wqn1TZKk',
       icon: <CommunityIcon className="w-5 h-5" />,
       color: 'hover:bg-teal-600 hover:text-white dark:hover:bg-teal-600 text-teal-400 border-teal-500/20 bg-teal-500/5',
     },
@@ -62,7 +68,7 @@ export function FloatingSocials() {
       name: 'Send Enquiry',
       isDialog: true,
       url: '#',
-      icon: <MessageSquare className="w-5 h-5" />,
+      icon: <ClipboardList className="w-5 h-5" />,
       color: 'hover:bg-purple-600 hover:text-white dark:hover:bg-purple-600 text-purple-400 border-purple-500/20 bg-purple-500/5',
     },
   ];
@@ -90,8 +96,8 @@ export function FloatingSocials() {
                 <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                      <MessageSquare className="w-5 h-5 text-purple-400" />
-                      Submit Subscription Enquiry
+                      <ClipboardList className="w-5 h-5 text-purple-400" />
+                      Enquiry Form
                     </DialogTitle>
                   </DialogHeader>
                   <div className="py-2">
@@ -106,8 +112,8 @@ export function FloatingSocials() {
             <motion.a
               key={social.name}
               href={social.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={social.url.startsWith('tel:') ? undefined : "_blank"}
+              rel={social.url.startsWith('tel:') ? undefined : "noopener noreferrer"}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}

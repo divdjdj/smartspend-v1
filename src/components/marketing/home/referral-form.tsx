@@ -84,16 +84,18 @@ export function ReferralForm() {
 
   if (submitted && regData) {
     return (
-      <div className="mt-8 border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl rounded-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
+      <div className="mt-8 border border-brand/20 bg-brand/5 backdrop-blur-xl rounded-2xl p-6 sm:p-8 space-y-6 relative overflow-hidden">
         {/* Glow accent */}
-        <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-emerald-500/10 blur-xl pointer-events-none" />
+        <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-brand/10 blur-xl pointer-events-none" />
 
-        <div className="text-center space-y-2">
-          <div className="inline-flex h-12 w-12 rounded-full bg-emerald-500/20 text-emerald-400 items-center justify-center shadow-soft">
-            <Sparkles className="h-6 w-6 animate-pulse" />
+        <div className="text-center space-y-3">
+          <div className="inline-flex h-12 w-12 rounded-full bg-brand/25 text-brand items-center justify-center shadow-soft">
+            <Check className="h-6 w-6" />
           </div>
-          <h3 className="font-display font-extrabold text-xl text-foreground">Welcome to the Referral Program!</h3>
-          <p className="text-xs text-muted-foreground">Your account has been created. Start sharing your link to earn cash!</p>
+          <h3 className="font-display font-extrabold text-xl text-foreground">Registration Successful!</h3>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            Thank you for becoming our referral partner! Our team will contact you shortly and guide you through the referral process, including your referral link and promotional materials.
+          </p>
         </div>
 
         {/* Generated Invite Link Box */}
@@ -103,10 +105,10 @@ export function ReferralForm() {
             <span className="truncate mr-2">{regData.referralLink}</span>
             <button 
               onClick={handleCopyLink} 
-              className="text-primary hover:text-emerald-400 transition-colors cursor-pointer shrink-0"
+              className="text-brand hover:text-brand/80 transition-colors cursor-pointer shrink-0"
               title="Copy Referral Link"
             >
-              {copied ? <Check className="h-4.5 w-4.5 text-emerald-400" /> : <Copy className="h-4.5 w-4.5" />}
+              {copied ? <Check className="h-4.5 w-4.5 text-brand" /> : <Copy className="h-4.5 w-4.5" />}
             </button>
           </div>
         </div>
@@ -114,7 +116,7 @@ export function ReferralForm() {
         {/* Auto Generated Login Info */}
         <div className="border border-border bg-card/60 rounded-xl p-4 space-y-3.5">
           <div className="flex items-center gap-2 font-bold text-xs text-muted-foreground uppercase tracking-wider">
-            <KeyRound className="h-4 w-4 text-primary" /> Login Profile Created
+            <KeyRound className="h-4 w-4 text-brand" /> Login Profile Created
           </div>
           <p className="text-xs text-muted-foreground">Log in with either your Mobile number or Email using these credentials:</p>
           <div className="grid gap-2 text-xs sm:grid-cols-2">
@@ -132,7 +134,7 @@ export function ReferralForm() {
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             onClick={handleWhatsAppShare}
-            className="flex-1 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow-soft transition-all cursor-pointer"
+            className="flex-1 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand hover:bg-brand/90 text-white font-bold text-sm shadow-soft transition-all cursor-pointer"
           >
             <MessageSquare className="h-4.5 w-4.5" /> Share on WhatsApp
           </button>
@@ -160,35 +162,35 @@ export function ReferralForm() {
         <FormField label="Phone / WhatsApp" name="phone" required placeholder="+91 …" maxLength={20} />
         <FormField label="Email (optional)" name="email" type="email" placeholder="you@example.com" maxLength={255} />
       </div>
-      <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="group">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
           Preferred Reward
         </label>
         <select
           name="reward"
-          className="mt-1.5 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
+          className="w-full px-4 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 cursor-pointer shadow-sm"
         >
-          <option>Cash Reward</option>
-          <option>Subscription Reward (3 Months Free)</option>
+          <option className="bg-background text-foreground">Cash Reward</option>
+          <option className="bg-background text-foreground">Subscription Reward (3 Months Free)</option>
         </select>
       </div>
-      <div>
-        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Anything we should know? (optional)
+      <div className="group">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
+          Tell us anything more (Optional)
         </label>
         <textarea
           name="notes"
           rows={3}
           maxLength={500}
           placeholder="Audience, network size, social handles…"
-          className="mt-1.5 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
+          className="w-full px-4 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground placeholder:text-muted-foreground/45 focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 shadow-sm"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary/95 disabled:opacity-50 cursor-pointer h-12"
+        className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition hover:bg-primary/95 disabled:opacity-50 cursor-pointer h-12 font-display"
       >
         {loading ? (
           <>
@@ -223,9 +225,9 @@ function FormField({
   maxLength?: number;
 }) {
   return (
-    <div>
-      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {label} {required && <span className="text-primary">*</span>}
+    <div className="group">
+      <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 transition-colors group-focus-within:text-brand">
+        {label} {required && <span className="text-brand font-bold">*</span>}
       </label>
       <input
         name={name}
@@ -233,7 +235,7 @@ function FormField({
         required={required}
         placeholder={placeholder}
         maxLength={maxLength}
-        className="mt-1.5 w-full rounded-lg border border-border bg-background px-4 py-3 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
+        className="w-full px-4 py-3 rounded-xl border border-border/10 bg-soft/20 text-sm text-foreground placeholder:text-muted-foreground/45 focus:border-brand/40 focus:ring-1 focus:ring-brand/40 focus:outline-none transition-all duration-200 shadow-sm"
       />
     </div>
   );
