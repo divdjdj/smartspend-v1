@@ -38,7 +38,7 @@ export function HeroSection() {
           <div className="mt-6 h-[2px] w-24 bg-gradient-to-r from-primary via-emerald-500 to-teal-500 rounded-full" />
 
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:text-xl lg:leading-relaxed">
-            We help professionals and businesses access premium subscriptions across various categories, including Professional, AI, Design, Productivity, and more, through official gift vouchers with 50%+ savings.
+            We help professionals and businesses access premium subscriptions across various categories, including Professional, AI, Design, Productivity and more, through official gift vouchers with 50%+ savings.
           </p>
 
           {/* Action buttons */}
