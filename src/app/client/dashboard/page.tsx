@@ -201,10 +201,6 @@ export default function ClientDashboardPage() {
 
   return (
     <div className="flex-1 p-6 md:p-10 space-y-8 bg-background relative overflow-y-auto">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-[-10%] left-[-15%] w-[40%] h-[40%] bg-brand/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-15%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10 w-full">
         <DashboardHeader fullName={profile.fullName} totalEarnings={totalEarnings} />

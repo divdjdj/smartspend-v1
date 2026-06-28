@@ -386,15 +386,11 @@ export default function AdminReferralsPage() {
 
   return (
     <div className="flex-1 p-6 md:p-10 space-y-8 bg-background relative overflow-y-auto">
-      {/* Background Gradients */}
-      <div className="absolute top-[-10%] left-[-15%] w-[45%] h-[45%] bg-brand/5 rounded-full blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-15%] w-[45%] h-[45%] bg-gold/5 rounded-full blur-[130px] pointer-events-none" />
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative z-10">
         <div>
           <h2 className="text-xl font-display font-bold tracking-tight text-foreground">
-            Referral Manager Console
+            Referral Console
           </h2>
         </div>
         <Button

@@ -149,10 +149,6 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="flex-1 p-6 md:p-10 space-y-8 bg-background relative overflow-y-auto">
-      {/* Background Gradients */}
-      <div className="absolute top-[-10%] left-[-15%] w-[40%] h-[40%] bg-brand/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-15%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
-
       {/* Header */}
       <AdminHeader onRefresh={() => fetchReferralAnalytics(true)} isLoading={loading} />
 
