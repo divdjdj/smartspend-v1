@@ -5,7 +5,7 @@ import connectDB from "@/lib/mongodb";
 import User from "@/features/shared/model/user";
 import ReferralConversion from "@/features/shared/model/referral-conversion";
 import ReferralReward from "@/features/shared/model/referral-reward";
-import ClientPurchase from "@/features/shared/model/client-purchase";
+import Invoice from "@/features/shared/model/invoice";
 
 export async function GET() {
   try {
@@ -15,10 +15,8 @@ export async function GET() {
     }
 
     await connectDB();
-
-    // Fetch all users (excluding soft deleted and admins)
-    const users = await User.find({ isDeleted: { $ne: true }, role: { $ne: "admin" } })
-      .populate("referredBy.referrerId", "firstName lastName email")
+    // Fetch only users with role "referral_partner" (excluding soft deleted)
+    const users = await User.find({ isDeleted: { $ne: true }, role: "referral_partner" })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -40,7 +38,7 @@ export async function GET() {
       }
     ]);
 
-    const clientSalesAgg = await ClientPurchase.aggregate([
+    const clientSalesAgg = await Invoice.aggregate([
       { $match: { referrer_id: { $in: userIds } } },
       {
         $group: {
@@ -60,7 +58,7 @@ export async function GET() {
       }
     ]);
 
-    const clientPurchasesAgg = await ClientPurchase.aggregate([
+    const clientPurchasesAgg = await Invoice.aggregate([
       { $match: { client_id: { $in: userIds } } },
       {
         $group: {
@@ -82,19 +80,12 @@ export async function GET() {
       const userPurchases = userPurchases1 + userPurchases2;
       const userReward = rewards.find(r => r.customer_id.toString() === user._id.toString());
       
-      let sourceDisplay: string = user.source || "website_enquiry";
-      if (user.source === "referral" && user.referredBy?.referrerId) {
-        const referrer = user.referredBy.referrerId as { firstName?: string; lastName?: string; email?: string };
-        sourceDisplay = `Referred by: ${referrer.firstName || ""} ${referrer.lastName || ""}`.trim() || referrer.email || "Unknown";
-      }
-
       return {
         _id: user._id,
         name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "N/A",
         email: user.email,
         phone: user.phone || "N/A",
-        source: sourceDisplay,
-        referrerId: user.referredBy?.referrerId?._id?.toString() || null,
+        role: user.role,
         purchase: userPurchases,
         sale: userSales,
         commission: userReward?.total_earned || 0,

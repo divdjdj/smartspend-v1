@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-interface EnquiryItem {
+interface ClientItem {
   _id: string;
   name: string;
   mobile: string;
@@ -26,12 +26,14 @@ interface EnquiryItem {
   message?: string;
   status: 'pending' | 'contacted' | 'resolved' | 'ignored';
   notes?: string;
+  source?: string;
+  referralCode?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-interface EnquiryDetailsDialogProps {
-  selectedEnquiry: EnquiryItem | null;
+interface ClientDetailsDialogProps {
+  selectedEnquiry: ClientItem | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   adminNotes: string;
@@ -50,7 +52,7 @@ export function EnquiryDetailsDialog({
   savingNotes,
   handleSaveNotes,
   handleStatusChange,
-}: EnquiryDetailsDialogProps) {
+}: ClientDetailsDialogProps) {
   // Format Date Helper
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-IN", {

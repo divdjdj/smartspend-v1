@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
-import Enquiry from '@/features/shared/model/enquiry';
+import Client from '@/features/shared/model/client';
 
 export async function GET(req: Request) {
   try {
-    // 1. Authenticate session and check admin role
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== 'admin') {
+    if (!session || (session.user?.role !== 'admin' && session.user?.role !== 'referral_partner')) {
       return NextResponse.json({ error: 'Unauthorized access.' }, { status: 401 });
     }
 
@@ -29,6 +28,11 @@ export async function GET(req: Request) {
 
     // 4. Construct query filters
     const query: Record<string, unknown> = {};
+
+    // Referral partners can only see clients they referred
+    if (session.user?.role === 'referral_partner' && session.user?.id) {
+      query['referredBy.referrerId'] = session.user.id;
+    }
 
     // Filter by status if not "all"
     if (status !== 'all') {
@@ -65,19 +69,19 @@ export async function GET(req: Request) {
       ];
     }
 
-    // 5. Fetch enquiries and total count
+    // 5. Fetch clients and total count
     const sortConfig: Record<string, 'asc' | 'desc'> = { createdAt: sortOrder === 'asc' ? 'asc' : 'desc' };
     
-    const enquiries = await Enquiry.find(query)
+    const clients = await Client.find(query)
       .sort(sortConfig)
       .skip(skip)
       .limit(limit);
 
-    const total = await Enquiry.countDocuments(query);
+    const total = await Client.countDocuments(query);
 
     return NextResponse.json({
       success: true,
-      enquiries,
+      enquiries: clients,
       pagination: {
         total,
         page,

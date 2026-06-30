@@ -83,34 +83,34 @@ export async function POST(req: Request) {
       }
     }
 
-    // Query if there's any matching enquiry to recover referral attribution
-    let matchedEnquiry = null;
+    // Query if there's any matching Client to recover referral attribution
+    let matchedClient = null;
     try {
-      const Enquiry = (await import('@/features/shared/model/enquiry')).default;
-      matchedEnquiry = await Enquiry.findOne({
+      const Client = (await import('@/features/shared/model/client')).default;
+      matchedClient = await Client.findOne({
         $or: [
           { email: email.toLowerCase().trim() },
           { mobile: phone ? phone.trim() : '___nonexistent___' }
         ],
         status: { $ne: 'resolved' }
       });
-    } catch (enquiryErr) {
-      console.error('Error finding matching enquiry during signup:', enquiryErr);
+    } catch (clientErr) {
+      console.error('Error finding matching client during signup:', clientErr);
     }
 
     // Recover referral attribution if user has no code but did enquire with a code
-    if (!referredByObj && matchedEnquiry && matchedEnquiry.referredBy?.referrerId) {
+    if (!referredByObj && matchedClient && matchedClient.referredBy?.referrerId) {
       referredByObj = {
-        referrerId: matchedEnquiry.referredBy.referrerId,
-        referrerEmail: matchedEnquiry.referredBy.referrerEmail
+        referrerId: matchedClient.referredBy.referrerId,
+        referrerEmail: matchedClient.referredBy.referrerEmail
       };
       if (!referrerName && referredByObj.referrerId) {
-        const enquiryReferrerUser = await User.findById(referredByObj.referrerId);
-        if (enquiryReferrerUser) {
-          referrerName = [enquiryReferrerUser.firstName, enquiryReferrerUser.lastName].filter(Boolean).join(' ').trim();
+        const clientReferrerUser = await User.findById(referredByObj.referrerId);
+        if (clientReferrerUser) {
+          referrerName = [clientReferrerUser.firstName, clientReferrerUser.lastName].filter(Boolean).join(' ').trim();
         }
       }
-      appliedCode = matchedEnquiry.referralCode || '';
+      appliedCode = matchedClient.referralCode || '';
       if (appliedCode) {
         validCodeDoc = await ReferralCode.findOne({
           code: appliedCode,
@@ -123,18 +123,16 @@ export async function POST(req: Request) {
       }
     }
 
-    // Create inactive user
+    // Create referral partner user
     const user = new User({
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       email: email.toLowerCase().trim(),
       password,
       phone: phone ? phone.trim() : undefined,
-      role: 'customer',
+      role: 'referral_partner',
       status: 'inactive', // inactive until email is verified
       emailVerified: false,
-      referredBy: referredByObj,
-      source: referrerName || 'website_enquiry'
     });
 
     // Auto-generate referral code for this user
@@ -160,15 +158,14 @@ export async function POST(req: Request) {
     // Save user
     await user.save();
 
-    // Link and resolve matched Enquiry
-    if (matchedEnquiry) {
+    // Mark matched Client as resolved (they became a partner)
+    if (matchedClient) {
       try {
-        matchedEnquiry.status = 'resolved';
-        matchedEnquiry.client_id = user._id;
-        matchedEnquiry.notes = (matchedEnquiry.notes || '') + '\nConverted to registered user during signup.';
-        await matchedEnquiry.save();
-      } catch (enquirySaveErr) {
-        console.error('Error updating matched enquiry during signup:', enquirySaveErr);
+        matchedClient.status = 'resolved';
+        matchedClient.notes = (matchedClient.notes || '') + '\nConverted to referral partner during signup.';
+        await matchedClient.save();
+      } catch (clientSaveErr) {
+        console.error('Error updating matched client during signup:', clientSaveErr);
       }
     }
 

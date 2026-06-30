@@ -11,7 +11,7 @@ import { EnquiryFilters } from "@/components/admin/enquiry/enquiry-filters";
 import { EnquiryTable } from "@/components/admin/enquiry/enquiry-table";
 import { EnquiryDetailsDialog } from "@/components/admin/enquiry/enquiry-details-dialog";
 
-interface EnquiryItem {
+interface ClientItem {
   _id: string;
   name: string;
   mobile: string;
@@ -20,6 +20,8 @@ interface EnquiryItem {
   message?: string;
   status: 'pending' | 'contacted' | 'resolved' | 'ignored';
   notes?: string;
+  source?: string;
+  referralCode?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,7 +34,7 @@ interface Stats {
 }
 
 export default function EnquiryPage() {
-  const [enquiries, setEnquiries] = useState<EnquiryItem[]>([]);
+  const [enquiries, setEnquiries] = useState<ClientItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -42,7 +44,7 @@ export default function EnquiryPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState<Stats>({ total: 0, pending: 0, contacted: 0, resolved: 0 });
-  const [selectedEnquiry, setSelectedEnquiry] = useState<EnquiryItem | null>(null);
+  const [selectedEnquiry, setSelectedEnquiry] = useState<ClientItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
@@ -64,12 +66,10 @@ export default function EnquiryPage() {
       setEnquiries(data.enquiries);
       setTotalPages(data.pagination.pages);
       
-      // Calculate simple stats based on loaded enquiries or global count if needed
-      // To make stats real-time, we fetch all to aggregate for stats cards
       const allRes = await fetch(`/api/admin/enquiry?status=all&limit=500`);
       const allData = await allRes.json();
       if (allRes.ok && allData.enquiries) {
-        const items = allData.enquiries as EnquiryItem[];
+        const items = allData.enquiries as ClientItem[];
         setStats({
           total: items.length,
           pending: items.filter(i => i.status === 'pending').length,
@@ -105,17 +105,15 @@ export default function EnquiryPage() {
         throw new Error(data.error || "Failed to update status.");
       }
 
-      toast.success("Enquiry status updated.");
+      toast.success("Client status updated.");
       setEnquiries(prev => 
-        prev.map(e => e._id === id ? { ...e, status: newStatus as EnquiryItem['status'] } : e)
+        prev.map(e => e._id === id ? { ...e, status: newStatus as ClientItem['status'] } : e)
       );
       
-      // Update selected enquiry details if open
       if (selectedEnquiry?._id === id) {
-        setSelectedEnquiry(prev => prev ? { ...prev, status: newStatus as EnquiryItem['status'] } : null);
+        setSelectedEnquiry(prev => prev ? { ...prev, status: newStatus as ClientItem['status'] } : null);
       }
 
-      // Re-trigger stats update
       fetchEnquiries();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to update status.";
@@ -181,7 +179,7 @@ export default function EnquiryPage() {
   };
 
   // Open details modal
-  const openDetails = (enquiry: EnquiryItem) => {
+  const openDetails = (enquiry: ClientItem) => {
     setSelectedEnquiry(enquiry);
     setAdminNotes(enquiry.notes || "");
     setIsDetailsOpen(true);
@@ -193,7 +191,7 @@ export default function EnquiryPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
         <div>
           <h2 className="text-xl font-display font-bold tracking-tight text-foreground">
-            Enquiries Manager
+            Clients Manager
           </h2>
         </div>
         <Button

@@ -2,7 +2,7 @@ import { Loader2, ListIcon, Eye, MessageCircle, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-interface EnquiryItem {
+interface ClientItem {
   _id: string;
   name: string;
   mobile: string;
@@ -11,18 +11,20 @@ interface EnquiryItem {
   message?: string;
   status: 'pending' | 'contacted' | 'resolved' | 'ignored';
   notes?: string;
+  source?: string;
+  referralCode?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-interface EnquiryTableProps {
-  enquiries: EnquiryItem[];
+interface ClientTableProps {
+  enquiries: ClientItem[];
   loading: boolean;
   page: number;
   totalPages: number;
   setPage: (page: number | ((prev: number) => number)) => void;
   handleStatusChange: (id: string, newStatus: string) => Promise<void>;
-  openDetails: (item: EnquiryItem) => void;
+  openDetails: (item: ClientItem) => void;
   handleDeleteEnquiry: (id: string) => Promise<void>;
 }
 
@@ -35,7 +37,7 @@ export function EnquiryTable({
   handleStatusChange,
   openDetails,
   handleDeleteEnquiry,
-}: EnquiryTableProps) {
+}: ClientTableProps) {
   // Format Date Helper
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-IN", {

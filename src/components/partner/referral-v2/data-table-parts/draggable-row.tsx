@@ -5,9 +5,11 @@ import { type Row, flexRender } from "@tanstack/react-table"
 
 import { TableRow, TableCell } from "@/components/ui/table"
 
-export function DraggableRow({ row }: { row: Row<any> }) {
+import type { ReferralSchema } from "./schema"
+
+export function DraggableRow({ row }: { row: Row<ReferralSchema> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: (row.original as any)._id,
+    id: row.original.id,
   })
 
   return (
@@ -29,4 +31,3 @@ export function DraggableRow({ row }: { row: Row<any> }) {
     </TableRow>
   )
 }
-

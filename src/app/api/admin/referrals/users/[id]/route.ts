@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     await connectDB();
     const userId = (await params).id;
 
-    const user = await User.findById(userId).populate("referredBy.referrerId", "firstName lastName email").lean();
+    const user = await User.findById(userId).lean();
     if (!user || user.isDeleted) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -37,12 +37,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const reward = await ReferralReward.findOne({ customer_id: user._id }).lean();
 
-    let sourceDisplay: string = user.source || "website_enquiry";
-    if (user.source === "referral" && user.referredBy?.referrerId) {
-      const referrer = user.referredBy.referrerId as { firstName?: string; lastName?: string; email?: string };
-      sourceDisplay = `Referred by: ${referrer.firstName || ""} ${referrer.lastName || ""}`.trim() || referrer.email || "Unknown";
-    }
-
     const profileData = {
       user: {
         _id: user._id,
@@ -50,7 +44,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         lastName: user.lastName,
         email: user.email,
         phone: user.phone,
-        source: sourceDisplay,
+        role: user.role,
         status: user.status,
         createdAt: user.createdAt,
       },
@@ -93,3 +87,35 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    await connectDB();
+    const userId = (await params).id;
+    const body = await req.json();
+
+    const updateData: Record<string, any> = {};
+    if (body.firstName !== undefined) updateData.firstName = body.firstName;
+    if (body.lastName !== undefined) updateData.lastName = body.lastName;
+    if (body.email !== undefined) updateData.email = body.email.toLowerCase().trim();
+    if (body.phone !== undefined) updateData.phone = body.phone;
+    if (body.status !== undefined) updateData.status = body.status;
+
+    const user = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, user });
+  } catch (error: unknown) {
+    console.error("Update User Error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to update user";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+

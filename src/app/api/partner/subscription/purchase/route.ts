@@ -51,20 +51,12 @@ export async function POST(req: Request) {
     }
 
     // Determine if first purchase
-    const isFirstPurchase = user.subscriptions.length === 0;
 
-    let discountApplied = 0;
-    let netAmount = originalPrice;
-    let referralApplied = false;
-    const referrerId = user.referredBy?.referrerId;
-
-    // Check if referred by someone and it is their first purchase
-    if (referrerId && isFirstPurchase) {
-      const settings = await getReferralSettings();
-      discountApplied = settings.referral_bonus_amount || 500;
-      netAmount = Math.max(0, originalPrice - discountApplied);
-      referralApplied = true;
-    }
+    const discountApplied = 0;
+    const netAmount = originalPrice;
+    const referralApplied = false;
+    const referrerId = null; // Partners self-purchasing don't trigger referral rewards
+    // Note: referral discounts are for clients (Client model), not for partners purchasing their own subscriptions
 
     // Add subscription to user
     const endDate = new Date();

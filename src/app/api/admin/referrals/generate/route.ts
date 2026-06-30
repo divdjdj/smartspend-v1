@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
           phone,
           email: email || `${phone}@temp.spentsmart.in`,
           password: defaultPassword,
-          source: "admin",
+          role: 'referral_partner',
           status: "active",
           emailVerified: false,
         });

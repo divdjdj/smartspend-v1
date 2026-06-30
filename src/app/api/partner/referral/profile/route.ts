@@ -33,12 +33,6 @@ export async function GET() {
 
     const reward = await ReferralReward.findOne({ customer_id: user._id }).lean();
 
-    let sourceDisplay: string = user.source || "website_enquiry";
-    if (user.source === "referral" && user.referredBy?.referrerId) {
-      const referrer = user.referredBy.referrerId as { firstName?: string; lastName?: string; email?: string };
-      sourceDisplay = `Referred by: ${referrer.firstName || ""} ${referrer.lastName || ""}`.trim() || referrer.email || "Unknown";
-    }
-
     const profileData = {
       user: {
         _id: user._id,
@@ -46,7 +40,7 @@ export async function GET() {
         lastName: user.lastName,
         email: user.email,
         phone: user.phone,
-        source: sourceDisplay,
+        role: user.role,
         status: user.status,
         createdAt: user.createdAt,
       },

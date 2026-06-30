@@ -4,7 +4,7 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
 import User from '@/features/shared/model/user';
 import ReferralConversion from '@/features/shared/model/referral-conversion';
-import Enquiry from '@/features/shared/model/enquiry';
+import Client from '@/features/shared/model/client';
 
 export async function GET() {
   try {
@@ -34,10 +34,10 @@ export async function GET() {
       }
     });
 
-    // 5. User Counts
+    // 5. Client Counts
     const [totalClients, activeClients] = await Promise.all([
-      User.countDocuments({ role: 'customer' }),
-      User.countDocuments({ role: 'customer', status: 'active' })
+      Client.countDocuments({ isDeleted: { $ne: true } }),
+      Client.countDocuments({ isDeleted: { $ne: true }, status: { $in: ['pending', 'contacted'] } })
     ]);
 
     // 6. Conversion rate & funnel
@@ -106,12 +106,12 @@ export async function GET() {
     }
 
     // 8. Recent Activities
-    const recentSignups = await User.find({ role: 'customer' })
-      .select('firstName lastName email createdAt')
+    const recentClients = await Client.find({ isDeleted: { $ne: true } })
+      .select('name mobile email createdAt source status')
       .sort({ createdAt: -1 })
       .limit(5);
 
-    const recentEnquiries = await Enquiry.find({})
+    const recentEnquiries = await Client.find({})
       .sort({ createdAt: -1 })
       .limit(5);
 
@@ -161,7 +161,7 @@ export async function GET() {
         funnelChartData
       },
       feeds: {
-        recentSignups,
+        recentClients,
         recentPurchases,
         recentEnquiries
       }

@@ -7,7 +7,7 @@ import ReferralCode from '@/features/shared/model/referral-code';
 import { z } from 'zod';
 
 const updateSchema = z.object({
-  role: z.enum(['customer', 'admin']).optional(),
+  role: z.enum(['admin', 'referral_partner']).optional(),
   status: z.enum(['active', 'inactive', 'suspended']).optional(),
 });
 
@@ -36,14 +36,14 @@ export async function GET(
       return NextResponse.json({ error: 'Client not found.' }, { status: 404 });
     }
 
-    // 4. Fetch associated Enquiry records (wishlists)
-    const Enquiry = (await import('@/features/shared/model/enquiry')).default;
-    const enquiries = await Enquiry.find({ client_id: id }).sort({ createdAt: -1 });
+    // 4. Fetch clients referred by this partner
+    const Client = (await import('@/features/shared/model/client')).default;
+    const referredClients = await Client.find({ 'referredBy.referrerId': id }).sort({ createdAt: -1 });
 
     return NextResponse.json({
       success: true,
       user,
-      enquiries
+      enquiries: referredClients
     });
 
   } catch (error) {

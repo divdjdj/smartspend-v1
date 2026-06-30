@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import connectDB from '@/lib/mongodb';
-import Enquiry from '@/features/shared/model/enquiry';
+import Client from '@/features/shared/model/client';
 import { z } from 'zod';
 
 const updateSchema = z.object({
@@ -18,7 +18,7 @@ export async function PATCH(
   try {
     // 1. Authenticate session and check admin role
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== 'admin') {
+    if (!session || (session.user?.role !== 'admin' && session.user?.role !== 'referral_partner')) {
       return NextResponse.json({ error: 'Unauthorized access.' }, { status: 401 });
     }
 
@@ -37,21 +37,21 @@ export async function PATCH(
     // 2. Connect to database
     await connectDB();
 
-    // 3. Find and update the enquiry
-    const updatedEnquiry = await Enquiry.findByIdAndUpdate(
+    // 3. Find and update the client
+    const updatedClient = await Client.findByIdAndUpdate(
       id,
       { $set: parseResult.data },
       { new: true, runValidators: true }
     );
 
-    if (!updatedEnquiry) {
-      return NextResponse.json({ error: 'Enquiry not found.' }, { status: 404 });
+    if (!updatedClient) {
+      return NextResponse.json({ error: 'Client not found.' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Enquiry updated successfully.',
-      enquiry: updatedEnquiry
+      message: 'Client updated successfully.',
+      enquiry: updatedClient
     });
 
   } catch (error) {
@@ -83,16 +83,16 @@ export async function DELETE(
     // 2. Connect to database
     await connectDB();
 
-    // 3. Delete the enquiry
-    const deletedEnquiry = await Enquiry.findByIdAndDelete(id);
+    // 3. Delete the client
+    const deletedClient = await Client.findByIdAndDelete(id);
 
-    if (!deletedEnquiry) {
-      return NextResponse.json({ error: 'Enquiry not found.' }, { status: 404 });
+    if (!deletedClient) {
+      return NextResponse.json({ error: 'Client not found.' }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Enquiry deleted successfully.'
+      message: 'Client deleted successfully.'
     });
 
   } catch (error) {

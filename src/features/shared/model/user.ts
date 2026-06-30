@@ -24,6 +24,7 @@ export interface ILoginHistory {
 }
 
 // User Document Interface
+// NOTE: Users are ONLY admins and referral partners. End-customers live in the Client model.
 export interface IUser extends Document {
   email: string;
   password?: string;
@@ -31,7 +32,7 @@ export interface IUser extends Document {
   lastName?: string;
   phone?: string;
   accountType: string;
-  role: 'customer' | 'admin';
+  role: 'admin' | 'referral_partner';
   status: 'active' | 'inactive' | 'suspended';
   emailVerified: boolean;
   emailVerificationToken?: string;
@@ -42,11 +43,6 @@ export interface IUser extends Document {
   lockUntil?: Date;
   isSuperAdmin?: boolean;
   referralCode?: string;
-  referredBy?: {
-    referrerId?: mongoose.Types.ObjectId;
-    referrerEmail?: string;
-  };
-  source?: 'referral' | 'website_enquiry' | 'admin';
   isDeleted?: boolean;
   accountBalance: number;
   subscriptions: ISubscription[];
@@ -111,7 +107,9 @@ const UserSchema = new Schema<IUser, IUserModel>({
   lastName: { type: String, trim: true },
   phone: { type: String, trim: true },
   accountType: { type: String, default: 'individual' },
-  role: { type: String, enum: ['customer', 'admin'], default: 'customer' },
+  // Only 'admin' and 'referral_partner' may exist in the User collection.
+  // End-customers are stored in the Client model.
+  role: { type: String, enum: ['admin', 'referral_partner'], default: 'referral_partner' },
   status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
   emailVerified: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
@@ -122,11 +120,6 @@ const UserSchema = new Schema<IUser, IUserModel>({
   lockUntil: { type: Date },
   isSuperAdmin: { type: Boolean, default: false, select: false },
   referralCode: { type: String, unique: true, sparse: true },
-  referredBy: {
-    referrerId: { type: Schema.Types.ObjectId, ref: 'User' },
-    referrerEmail: { type: String }
-  },
-  source: { type: String, default: 'website_enquiry' },
   isDeleted: { type: Boolean, default: false },
   accountBalance: { type: Number, default: 0 },
   subscriptions: [SubscriptionSchema],
@@ -263,11 +256,11 @@ UserSchema.methods.getActiveSubscriptions = function(this: IUser): ISubscription
 
 UserSchema.methods.hasPermission = function(this: IUser, permissionName: string): boolean {
   if (this.isSuperAdmin) return true;
-  if (this.role === 'admin') return true; // Admins have all permissions for now
+  if (this.role === 'admin') return true;
   
-  // Custom RBAC rules can be implemented here
-  const customerPermissions = ['view_dashboard', 'manage_own_referrals'];
-  if (this.role === 'customer' && customerPermissions.includes(permissionName)) {
+  // Referral partners have access to their own dashboard and referral management
+  const partnerPermissions = ['view_dashboard', 'manage_own_referrals', 'view_referred_clients'];
+  if (this.role === 'referral_partner' && partnerPermissions.includes(permissionName)) {
     return true;
   }
   return false;
@@ -318,6 +311,14 @@ UserSchema.statics.createAdmin = async function(this: IUserModel, adminData: Rec
   });
 };
 
+UserSchema.statics.createReferralPartner = async function(this: IUserModel, partnerData: Record<string, unknown>): Promise<IUser> {
+  return this.create({
+    ...partnerData,
+    role: 'referral_partner',
+    emailVerified: true
+  });
+};
+
 UserSchema.statics.searchUsers = async function(this: IUserModel, query: string, filters: Record<string, unknown> = {}): Promise<IUser[]> {
   const searchRegex = new RegExp(query, 'i');
   return this.find({
@@ -335,24 +336,22 @@ UserSchema.statics.getAdminStats = async function(this: IUserModel): Promise<Rec
   const baseFilter = { isDeleted: { $ne: true } };
   const totalUsers = await this.countDocuments(baseFilter);
   const activeUsers = await this.countDocuments({ ...baseFilter, status: 'active' });
-  const customersCount = await this.countDocuments({ ...baseFilter, role: 'customer' });
+  const partnersCount = await this.countDocuments({ ...baseFilter, role: 'referral_partner' });
   const adminsCount = await this.countDocuments({ ...baseFilter, role: 'admin' });
   const verifiedEmails = await this.countDocuments({ ...baseFilter, emailVerified: true });
-
-  const activeSubscriptionsCount = await this.countDocuments({
-    'subscriptions.status': 'active',
-    'subscriptions.endDate': { $gt: new Date() }
-  });
 
   return {
     totalUsers,
     activeUsers,
-    customersCount,
+    partnersCount,
     adminsCount,
     verifiedEmails,
-    activeSubscriptionsCount
   };
 };
+
+if (process.env.NODE_ENV === 'development') {
+  delete mongoose.models.User;
+}
 
 const User = mongoose.models.User as IUserModel || mongoose.model<IUser, IUserModel>('User', UserSchema);
 

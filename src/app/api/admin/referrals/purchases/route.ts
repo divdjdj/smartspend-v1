@@ -5,7 +5,8 @@ import connectDB from "@/lib/mongodb";
 import User from "@/features/shared/model/user";
 import ReferralSetting from "@/features/shared/model/referral-setting";
 import ReferralReward from "@/features/shared/model/referral-reward";
-import ClientPurchase, { IClientPurchase } from "@/features/shared/model/client-purchase";
+import Client from "@/features/shared/model/client";
+import Invoice, { IInvoice } from "@/features/shared/model/invoice";
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
 
-    const purchases: IClientPurchase[] = await ClientPurchase.find({ client_id: clientId }).sort({ purchase_date: -1 }).lean();
+    const purchases: IInvoice[] = await Invoice.find({ client_id: clientId }).sort({ purchase_date: -1 }).lean();
 
     return NextResponse.json({ success: true, purchases });
   } catch (error: unknown) {
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const client = await User.findById(client_id).populate('referredBy.referrerId');
+    const client = await Client.findById(client_id);
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
@@ -59,7 +60,8 @@ export async function POST(req: NextRequest) {
       settings = await ReferralSetting.create({});
     }
 
-    const referrerId = client.referredBy?.referrerId?._id;
+    // Find who referred this client directly from the client model
+    const referrerId = client.referredBy?.referrerId || null;
     let commission_amount = 0;
     let commission_calculated = false;
 
@@ -104,16 +106,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const newPurchase = await ClientPurchase.create({
+    // Generate sequential invoice number (INV-YYYY-MM-DD-XXXX)
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const datePrefix = `INV-${year}-${month}-${day}-`;
+
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const count = await Invoice.countDocuments({
+      createdAt: { $gte: startOfDay, $lte: endOfDay }
+    });
+    const invoice_number = `${datePrefix}${String(count + 1).padStart(4, '0')}`;
+
+    const newInvoice = await Invoice.create({
       client_id,
-      service_name,
+      invoice_number,
+      items: [{
+        service_name,
+        amount,
+        quantity: 1
+      }],
       amount,
       referrer_id: referrerId || undefined,
       commission_amount,
-      commission_calculated
+      commission_calculated,
+      status: 'paid'
     });
 
-    return NextResponse.json({ success: true, purchase: newPurchase });
+    return NextResponse.json({ success: true, purchase: newInvoice });
   } catch (error: unknown) {
     console.error("Add Purchase Error:", error);
     const message = error instanceof Error ? error.message : "Failed to add purchase";
