@@ -1,1 +1,1 @@
-export const DB_NAME = "SPENTS-SMART";
+export const DB_NAME = "SPEND_SMART_SUBSCRIPTIONS";
