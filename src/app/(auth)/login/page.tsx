@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<'partner' | 'admin'>('partner');
+  const [activeTab, setActiveTab] = useState<'client' | 'partner' | 'admin'>('client');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -62,7 +62,10 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const targetUrl = activeTab === 'admin' ? '/admin/dashboard' : '/partner/dashboard';
+      let targetUrl = '/clients/enquiries';
+      if (activeTab === 'admin') targetUrl = '/admin/dashboard';
+      else if (activeTab === 'partner') targetUrl = '/partner/dashboard';
+
       const result = await signIn('credentials', {
         redirect: false,
         email: formData.email,
@@ -84,11 +87,21 @@ function LoginForm() {
           return;
         }
 
-        if (activeTab === 'partner' && userRole === 'admin') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push(targetUrl);
+        if (activeTab === 'partner' && userRole !== 'referral_partner') {
+          setError('Access denied. You do not have partner privileges.');
+          await signOut({ redirect: false });
+          setLoading(false);
+          return;
         }
+
+        if (activeTab === 'client' && userRole !== 'client') {
+          setError('Access denied. You do not have client privileges.');
+          await signOut({ redirect: false });
+          setLoading(false);
+          return;
+        }
+
+        router.push(targetUrl);
       }
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : 'An unexpected error occurred.';
@@ -115,12 +128,24 @@ function LoginForm() {
       <AuthAlert type="error" message={error} />
       <AuthAlert type="success" message={infoMessage} />
 
-      {/* Partner / Admin Tabs */}
-      <div className="relative flex p-1 bg-soft/40 border border-border/15 rounded-xl mb-6">
+      {/* Client / Partner / Admin Tabs */}
+      <div className="relative flex p-1 bg-soft/40 border border-border/15 rounded-xl mb-6 gap-1">
+        <Button
+          type="button"
+          onClick={() => setActiveTab('client')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
+            activeTab === 'client'
+              ? 'bg-gradient-brand text-primary-foreground shadow-soft scale-[1.02]'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <User className="h-4 w-4" />
+          Client
+        </Button>
         <Button
           type="button"
           onClick={() => setActiveTab('partner')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
             activeTab === 'partner'
               ? 'bg-gradient-brand text-primary-foreground shadow-soft scale-[1.02]'
               : 'text-muted-foreground hover:text-foreground'
@@ -132,7 +157,7 @@ function LoginForm() {
         <Button
           type="button"
           onClick={() => setActiveTab('admin')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
             activeTab === 'admin'
               ? 'bg-gradient-brand text-primary-foreground shadow-soft scale-[1.02]'
               : 'text-muted-foreground hover:text-foreground'

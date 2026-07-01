@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
-    const { firstName, lastName, email, password, phone, referralCode } = await req.json();
+    const { firstName, lastName, email, password, phone, referralCode, role = 'referral_partner' } = await req.json();
 
     // Server-side validation
     if (!email || !password || !firstName || !lastName) {
@@ -34,7 +34,84 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // Check if user already exists
+    if (role === 'client') {
+      const Client = (await import('@/features/shared/model/client')).default;
+      
+      // Check if user with this email already exists in User collection
+      const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+      if (existingUser) {
+        return NextResponse.json(
+          { error: 'An account with this email address already exists.' },
+          { status: 400 }
+        );
+      }
+
+      // Check if client already exists (by email or mobile)
+      const existingClient = await Client.findOne({
+        $or: [
+          { email: email.toLowerCase().trim() },
+          { mobile: phone ? phone.trim() : '___nonexistent___' }
+        ]
+      }).select('+password');
+
+      if (existingClient) {
+        if (existingClient.password) {
+          return NextResponse.json(
+            { error: 'An account with this email or mobile number already exists.' },
+            { status: 400 }
+          );
+        }
+        
+        // Update existing client document with password, name details, and activate
+        existingClient.password = password;
+        existingClient.name = `${firstName} ${lastName}`.trim();
+        existingClient.status = 'active';
+        if (referralCode && !existingClient.referralCode) {
+          existingClient.referralCode = referralCode.trim().toUpperCase();
+          existingClient.source = 'referral';
+        }
+        await existingClient.save();
+
+        return NextResponse.json(
+          { 
+            message: 'Registration successful! Your client account is now active. You can now log in.',
+            user: {
+              id: existingClient._id,
+              firstName,
+              lastName,
+              email: existingClient.email
+            }
+          },
+          { status: 201 }
+        );
+      } else {
+        // Create new client
+        const newClient = await Client.create({
+          name: `${firstName} ${lastName}`.trim(),
+          email: email.toLowerCase().trim(),
+          mobile: phone ? phone.trim() : '',
+          password,
+          status: 'active',
+          source: referralCode ? 'referral' : 'website_enquiry',
+          referralCode: referralCode ? referralCode.trim().toUpperCase() : undefined
+        });
+
+        return NextResponse.json(
+          { 
+            message: 'Registration successful! Your client account has been created. You can now log in.',
+            user: {
+              id: newClient._id,
+              firstName,
+              lastName,
+              email: newClient.email
+            }
+          },
+          { status: 201 }
+        );
+      }
+    }
+
+    // Check if user already exists (for referral_partner role)
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       return NextResponse.json(

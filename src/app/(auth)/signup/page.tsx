@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { User } from 'lucide-react';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { AuthInput } from '@/components/auth/auth-input';
 import { AuthPasswordInput } from '@/components/auth/auth-password-input';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthAlert } from '@/components/auth/auth-alert';
 import { PasswordRequirements } from '@/components/auth/password-requirements';
+import { Button } from '@/components/ui/button';
 
 function getCookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -24,6 +26,7 @@ function getCookie(name: string): string | null {
 
 export default function SignupPage() {
   const router = useRouter();
+  const [activeRole, setActiveRole] = useState<'client' | 'partner'>('client');
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -93,7 +96,8 @@ export default function SignupPage() {
           email: formData.email,
           password: formData.password,
           phone: formData.phone || undefined,
-          referralCode: referralCode || undefined
+          referralCode: referralCode || undefined,
+          role: activeRole === 'client' ? 'client' : 'referral_partner'
         }),
       });
 
@@ -103,7 +107,7 @@ export default function SignupPage() {
         throw new Error(data.error || 'Registration failed. Please try again.');
       }
 
-      setSuccess(data.message || 'Account created successfully! Check your email to verify.');
+      setSuccess(data.message || 'Account created successfully!');
       
       // Reset form on success
       setFormData({
@@ -142,6 +146,34 @@ export default function SignupPage() {
       subtitle="Join thousands saving up to 50% on premium subscriptions"
       footer={footerLink}
     >
+      {/* Client / Partner Toggle */}
+      <div className="relative flex p-1 bg-soft/40 border border-border/15 rounded-xl mb-6">
+        <Button
+          type="button"
+          onClick={() => setActiveRole('client')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
+            activeRole === 'client'
+              ? 'bg-gradient-brand text-primary-foreground shadow-soft scale-[1.02]'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <User className="h-4 w-4" />
+          Client
+        </Button>
+        <Button
+          type="button"
+          onClick={() => setActiveRole('partner')}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 cursor-pointer focus:outline-none ${
+            activeRole === 'partner'
+              ? 'bg-gradient-brand text-primary-foreground shadow-soft scale-[1.02]'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <User className="h-4 w-4" />
+          Partner
+        </Button>
+      </div>
+
       <AuthAlert type="error" message={error} />
       
       {success && (

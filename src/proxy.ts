@@ -13,15 +13,21 @@ export default async function proxy(req: NextRequest) {
     pathname.startsWith('/reset-password') || 
     pathname.startsWith('/verify-email');
     
-  const isProtectedRoute = pathname.startsWith('/partner') || pathname.startsWith('/admin');
+  const isProtectedRoute = 
+    pathname.startsWith('/partner') || 
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/clients');
 
   // Redirect authenticated users away from auth pages to their respective dashboard
   if (token && isAuthPage) {
-    const role = token.role || 'customer';
+    const role = token.role || 'client';
     if (role === 'admin') {
       return NextResponse.redirect(new URL('/admin/dashboard', req.url));
     }
-    return NextResponse.redirect(new URL('/partner/dashboard', req.url));
+    if (role === 'referral_partner') {
+      return NextResponse.redirect(new URL('/partner/dashboard', req.url));
+    }
+    return NextResponse.redirect(new URL('/clients/enquiries', req.url));
   }
 
   // Redirect unauthenticated users to login page
@@ -33,6 +39,25 @@ export default async function proxy(req: NextRequest) {
 
   // Prevent non-admin users from accessing admin routes
   if (pathname.startsWith('/admin') && token?.role !== 'admin') {
+    if (token?.role === 'client') {
+      return NextResponse.redirect(new URL('/clients/enquiries', req.url));
+    }
+    return NextResponse.redirect(new URL('/partner/dashboard', req.url));
+  }
+
+  // Prevent non-partner users from accessing partner routes
+  if (pathname.startsWith('/partner') && token?.role !== 'referral_partner') {
+    if (token?.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+    }
+    return NextResponse.redirect(new URL('/clients/enquiries', req.url));
+  }
+
+  // Prevent non-client users from accessing client routes
+  if (pathname.startsWith('/clients') && token?.role !== 'client') {
+    if (token?.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url));
+    }
     return NextResponse.redirect(new URL('/partner/dashboard', req.url));
   }
 
@@ -43,6 +68,7 @@ export const config = {
   matcher: [
     '/partner/:path*', 
     '/admin/:path*', 
+    '/clients/:path*',
     '/login', 
     '/signup', 
     '/forgot-password', 

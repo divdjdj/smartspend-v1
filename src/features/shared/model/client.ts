@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 // Subscription Interface (client can purchase services)
 export interface IClientSubscription {
@@ -20,13 +21,14 @@ export interface IClient extends Document {
   name: string;
   mobile: string;
   email?: string;
+  password?: string;
 
   // Enquiry / Interest Info
   subscription?: string;   // what they're interested in (from form)
   message?: string;
 
   // CRM Status
-    status: 'pending' | 'contacted' | 'resolved' | 'ignored' | 'active' | 'inactive';
+  status: 'pending' | 'contacted' | 'resolved' | 'ignored' | 'active' | 'inactive';
   notes?: string;
 
   // Referral Attribution
@@ -47,6 +49,9 @@ export interface IClient extends Document {
 
   createdAt?: Date;
   updatedAt?: Date;
+
+  // Methods
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 export interface IClientModel extends Model<IClient> {
@@ -71,6 +76,7 @@ const ClientSchema = new Schema<IClient, IClientModel>(
     name: { type: String, required: true, trim: true, index: true },
     mobile: { type: String, required: true, trim: true, index: true },
     email: { type: String, trim: true, lowercase: true, sparse: true, index: true },
+    password: { type: String, select: false },
 
     subscription: { type: String, trim: true },
     message: { type: String, trim: true },
@@ -105,6 +111,19 @@ const ClientSchema = new Schema<IClient, IClientModel>(
   }
 );
 
+// Pre-save password hashing
+ClientSchema.pre('save', async function(this: IClient) {
+  if (!this.isModified('password') || !this.password) return;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Methods
+ClientSchema.methods.comparePassword = async function(this: IClient, candidatePassword: string): Promise<boolean> {
+  if (!this.password) return false;
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
 // Statics
 ClientSchema.statics.findByMobile = function (mobile: string) {
   return this.findOne({ mobile: mobile.trim() });
@@ -121,3 +140,4 @@ if (process.env.NODE_ENV === 'development') {
 const Client = mongoose.models.Client as IClientModel || mongoose.model<IClient, IClientModel>('Client', ClientSchema);
 
 export default Client;
+
