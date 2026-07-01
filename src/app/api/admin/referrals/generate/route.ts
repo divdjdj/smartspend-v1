@@ -21,6 +21,8 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     let targetUserId = userId;
+    let createdPassword = "";
+    let createdEmail = "";
     
     // If no userId provided, it means we're creating a new user for this link
     if (!targetUserId) {
@@ -43,16 +45,18 @@ export async function POST(req: NextRequest) {
 
         // Temporary default password for newly created leads
         const defaultPassword = Math.random().toString(36).slice(-8) + "Aa1!";
+        createdPassword = defaultPassword;
+        createdEmail = email || `${phone}@temp.spentsmart.in`;
 
         const newUser = await User.create({
           firstName,
           lastName,
           phone,
-          email: email || `${phone}@temp.spentsmart.in`,
+          email: createdEmail,
           password: defaultPassword,
           role: 'referral_partner',
           status: "active",
-          emailVerified: false,
+          emailVerified: true,
         });
 
         targetUserId = newUser._id;
@@ -79,7 +83,13 @@ export async function POST(req: NextRequest) {
       is_active: true
     });
 
-    return NextResponse.json({ success: true, referralCode: newCode });
+    return NextResponse.json({
+      success: true,
+      referralCode: newCode,
+      userCreated: !!createdPassword,
+      email: createdEmail || undefined,
+      password: createdPassword || undefined
+    });
 
   } catch (error: unknown) {
     console.error("Generate Referral Link Error:", error);

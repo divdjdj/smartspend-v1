@@ -33,7 +33,7 @@ const data = {
       ),
     },
     {
-      title: "Clients",
+      title: "Your Clients",
       url: "/partner/clients",
       icon: (
         <UsersIcon

@@ -20,12 +20,16 @@ interface ClientPurchasesDialogProps {
   client: Client;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  readOnly?: boolean;
+  apiUrl?: string;
 }
 
 export default function ClientPurchasesDialog({
   client,
   isOpen,
   onOpenChange,
+  readOnly = false,
+  apiUrl = '/api/admin/invoices',
 }: ClientPurchasesDialogProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,7 +41,7 @@ export default function ClientPurchasesDialog({
     if (!client?._id) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/invoices?clientId=${client._id}&limit=50`);
+      const res = await fetch(`${apiUrl}?clientId=${client._id}&limit=50`);
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Failed to fetch purchases.');
@@ -108,13 +112,15 @@ export default function ClientPurchasesDialog({
                 <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                 Reload
               </Button>
-              <Button
-                onClick={() => setIsCreateInvoiceOpen(true)}
-                className="px-3 py-1.5 h-8 text-[11px] rounded-lg bg-brand hover:bg-brand/90 text-white flex items-center gap-1 cursor-pointer shadow-soft transition-all"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                New Invoice
-              </Button>
+              {!readOnly && (
+                <Button
+                  onClick={() => setIsCreateInvoiceOpen(true)}
+                  className="px-3 py-1.5 h-8 text-[11px] rounded-lg bg-brand hover:bg-brand/90 text-white flex items-center gap-1 cursor-pointer shadow-soft transition-all"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  New Invoice
+                </Button>
+              )}
             </div>
           </DialogHeader>
 
@@ -129,7 +135,9 @@ export default function ClientPurchasesDialog({
                 <ShoppingCart className="h-10 w-10 opacity-30 text-brand" />
                 <h4 className="font-semibold text-sm text-foreground">No Purchases Recorded</h4>
                 <p className="text-xs max-w-xs">
-                  This client has not purchased any services or apps yet. Click &quot;New Invoice&quot; to issue their first bill.
+                  {readOnly 
+                    ? "This client has not purchased any services or apps yet."
+                    : "This client has not purchased any services or apps yet. Click \"New Invoice\" to issue their first bill."}
                 </p>
               </div>
             ) : (
@@ -194,7 +202,7 @@ export default function ClientPurchasesDialog({
       </Dialog>
 
       {/* Render Sub-Dialogs */}
-      {client && (
+      {client && !readOnly && (
         <CreateInvoiceDialog
           client={client}
           isOpen={isCreateInvoiceOpen}

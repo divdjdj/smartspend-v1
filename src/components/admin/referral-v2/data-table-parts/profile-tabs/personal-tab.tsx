@@ -17,6 +17,10 @@ interface PersonalTabProps {
   setProfilePhone: (val: string) => void
   profileStatus: string
   setProfileStatus: (val: string) => void
+  profilePassword?: string
+  setProfilePassword?: (val: string) => void
+  profileEmailVerified?: boolean
+  setProfileEmailVerified?: (val: boolean) => void
   handleUpdateProfileClient: (e: React.FormEvent) => void
   profileUpdating: boolean
 }
@@ -32,6 +36,10 @@ export function PersonalTab({
   setProfilePhone,
   profileStatus,
   setProfileStatus,
+  profilePassword = "",
+  setProfilePassword = () => {},
+  profileEmailVerified = false,
+  setProfileEmailVerified = () => {},
   handleUpdateProfileClient,
   profileUpdating,
 }: PersonalTabProps) {
@@ -72,6 +80,23 @@ export function PersonalTab({
             onChange={e => setProfileEmail(e.target.value)}
             className="h-9 text-xs bg-background"
           />
+          <div className="flex items-center gap-2 mt-1">
+            {profileEmailVerified ? (
+              <span className="text-[10px] font-bold text-emerald-500 flex items-center gap-1 uppercase tracking-wider">
+                Email Verified ✅
+              </span>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setProfileEmailVerified(true)}
+                className="h-6 text-[9px] font-bold text-amber-500 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 hover:text-amber-600 px-2 py-0.5 rounded-lg uppercase tracking-wider"
+              >
+                ⚠️ Unverified - Verify Manually
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-1">
@@ -81,6 +106,30 @@ export function PersonalTab({
             onChange={e => setProfilePhone(e.target.value)}
             className="h-9 text-xs bg-background"
           />
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-[10px] text-muted-foreground uppercase font-bold">Reset Password</Label>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Enter new password (optional)"
+              value={profilePassword}
+              onChange={e => setProfilePassword(e.target.value)}
+              className="h-9 text-xs bg-background flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const randPass = Math.random().toString(36).slice(-8) + "Aa1!";
+                setProfilePassword(randPass);
+              }}
+              className="h-9 text-xs font-semibold px-3"
+            >
+              Generate
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-1">

@@ -46,6 +46,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         phone: user.phone,
         role: user.role,
         status: user.status,
+        emailVerified: user.emailVerified,
         createdAt: user.createdAt,
       },
       stats: {
@@ -99,19 +100,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const userId = (await params).id;
     const body = await req.json();
 
-    const updateData: Record<string, any> = {};
-    if (body.firstName !== undefined) updateData.firstName = body.firstName;
-    if (body.lastName !== undefined) updateData.lastName = body.lastName;
-    if (body.email !== undefined) updateData.email = body.email.toLowerCase().trim();
-    if (body.phone !== undefined) updateData.phone = body.phone;
-    if (body.status !== undefined) updateData.status = body.status;
-
-    const user = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
+    const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, user });
+    if (body.firstName !== undefined) user.firstName = body.firstName;
+    if (body.lastName !== undefined) user.lastName = body.lastName;
+    if (body.email !== undefined) user.email = body.email.toLowerCase().trim();
+    if (body.phone !== undefined) user.phone = body.phone;
+    if (body.status !== undefined) user.status = body.status;
+    if (body.emailVerified !== undefined) user.emailVerified = body.emailVerified;
+    if (body.password) {
+      user.password = body.password;
+    }
+
+    await user.save();
+
+    return NextResponse.json({ success: true, user: user.sanitize() });
   } catch (error: unknown) {
     console.error("Update User Error:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to update user";

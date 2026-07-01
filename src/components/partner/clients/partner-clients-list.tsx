@@ -1,8 +1,10 @@
 'use client';
 
 import * as React from "react"
-import { Loader2, Mail, Phone, Calendar } from "lucide-react"
+import { Loader2, Mail, Phone, Calendar, Receipt } from "lucide-react"
 import { Client } from "@/types"
+import { Button } from "@/components/ui/button"
+import ClientPurchasesDialog from "@/components/admin/clients/client-purchases-dialog"
 
 interface PartnerClientsListProps {
   clients: Client[]
@@ -20,6 +22,8 @@ const statusOptions = [
 
 export function PartnerClientsList({ clients, loading }: PartnerClientsListProps) {
   const [clientList, setClientList] = React.useState<Client[]>([])
+  const [selectedClient, setSelectedClient] = React.useState<Client | null>(null)
+  const [isPurchasesOpen, setIsPurchasesOpen] = React.useState(false)
 
   React.useEffect(() => {
     // Auto-correct client status in frontend state if they have purchases
@@ -118,12 +122,39 @@ export function PartnerClientsList({ clients, loading }: PartnerClientsListProps
                         {statusInfo.label}
                       </div>
                     </div>
+
+                    {/* View Invoices button */}
+                    <div className="flex flex-col items-end ml-2">
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold text-right w-full">Invoices</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedClient(client)
+                          setIsPurchasesOpen(true)
+                        }}
+                        className="h-8 px-3 mt-0.5 inline-flex items-center gap-1.5 text-xs border border-border/15 hover:bg-soft/10 text-foreground cursor-pointer rounded-lg font-semibold"
+                      >
+                        <Receipt className="h-3.5 w-3.5" />
+                        View
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             )
           })}
         </div>
+      )}
+      {selectedClient && (
+        <ClientPurchasesDialog
+          client={selectedClient}
+          isOpen={isPurchasesOpen}
+          onOpenChange={setIsPurchasesOpen}
+          readOnly={true}
+          apiUrl="/api/partner/invoices"
+        />
       )}
     </div>
   )

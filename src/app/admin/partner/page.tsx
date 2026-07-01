@@ -165,8 +165,16 @@ export default function AdminPartnerPage() {
   }, [fetchCodes, fetchConversions, fetchSettings, fetchPendingQueue, fetchClients, fetchAnalytics])
 
   useEffect(() => {
-    loadAllData()
-  }, [])
+    let active = true
+    Promise.resolve().then(() => {
+      if (active) {
+        loadAllData()
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [loadAllData])
 
   const handleToggleCodeStatus = async (id: string, currentStatus: boolean) => {
     try {
@@ -236,7 +244,22 @@ export default function AdminPartnerPage() {
       })
       const data = await res.json()
       if (res.ok) {
-        toast.success("Referral link generated successfully!")
+        if (data.userCreated) {
+          toast.success(
+            <div className="flex flex-col gap-1.5 p-1">
+              <span className="font-semibold text-sm text-foreground">Referral link generated!</span>
+              <span className="text-xs text-muted-foreground">A new user account was created:</span>
+              <div className="bg-muted p-2 rounded-lg text-xs space-y-1 font-mono select-all">
+                <div>Email: {data.email}</div>
+                <div>Password: {data.password}</div>
+              </div>
+              <span className="text-[10px] text-muted-foreground">Please copy and share these credentials with the client.</span>
+            </div>,
+            { duration: 20000 }
+          )
+        } else {
+          toast.success("Referral link generated successfully!")
+        }
         setNewLinkName("")
         setNewReferrerName("")
         setNewReferrerPhone("")

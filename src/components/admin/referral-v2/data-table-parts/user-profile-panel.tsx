@@ -40,6 +40,10 @@ interface UserProfilePanelProps {
   setProfilePhone: (val: string) => void
   profileStatus: string
   setProfileStatus: (val: string) => void
+  profilePassword?: string
+  setProfilePassword?: (val: string) => void
+  profileEmailVerified?: boolean
+  setProfileEmailVerified?: (val: boolean) => void
   handleUpdateProfileClient: (e: React.FormEvent) => void
   profileUpdating: boolean
 }
@@ -67,6 +71,10 @@ export function UserProfilePanel({
   setProfilePhone,
   profileStatus,
   setProfileStatus,
+  profilePassword = "",
+  setProfilePassword = () => {},
+  profileEmailVerified = false,
+  setProfileEmailVerified = () => {},
   handleUpdateProfileClient,
   profileUpdating,
 }: UserProfilePanelProps) {
@@ -126,6 +134,10 @@ export function UserProfilePanel({
                       setProfilePhone={setProfilePhone}
                       profileStatus={profileStatus}
                       setProfileStatus={setProfileStatus}
+                      profilePassword={profilePassword}
+                      setProfilePassword={setProfilePassword}
+                      profileEmailVerified={profileEmailVerified}
+                      setProfileEmailVerified={setProfileEmailVerified}
                       handleUpdateProfileClient={handleUpdateProfileClient}
                       profileUpdating={profileUpdating}
                     />

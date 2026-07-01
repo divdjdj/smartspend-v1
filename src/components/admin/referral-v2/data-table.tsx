@@ -252,6 +252,8 @@ export function DataTable({
   const [profileEmail, setProfileEmail] = React.useState("")
   const [profilePhone, setProfilePhone] = React.useState("")
   const [profileStatus, setProfileStatus] = React.useState("")
+  const [profilePassword, setProfilePassword] = React.useState("")
+  const [profileEmailVerified, setProfileEmailVerified] = React.useState(false)
   const [profileUpdating, setProfileUpdating] = React.useState(false)
 
   const fetchProfile = React.useCallback(async (clientId: string) => {
@@ -262,6 +264,7 @@ export function DataTable({
       if (res.ok && data.user) {
         setProfileStats(data.stats)
         setProfileCodes(data.referralCodes || [])
+        setProfileEmailVerified(!!data.user.emailVerified)
       } else {
         toast.error(data.error || "Failed to load user profile")
       }
@@ -282,6 +285,8 @@ export function DataTable({
       setProfileEmail(selectedProfileClient.email || "")
       setProfilePhone(selectedProfileClient.phone || "")
       setProfileStatus(selectedProfileClient.status || "active")
+      setProfilePassword("")
+      setProfileEmailVerified(false)
     }
   }, [selectedProfileClient, fetchProfile])
 
@@ -341,16 +346,21 @@ export function DataTable({
     if (!selectedProfileClient) return
     setProfileUpdating(true)
     try {
+      const payload: Record<string, any> = {
+        firstName: profileFirstName,
+        lastName: profileLastName,
+        email: profileEmail,
+        phone: profilePhone,
+        status: profileStatus,
+        emailVerified: profileEmailVerified,
+      }
+      if (profilePassword) {
+        payload.password = profilePassword
+      }
       const res = await fetch(`/api/admin/referrals/users/${selectedProfileClient._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: profileFirstName,
-          lastName: profileLastName,
-          email: profileEmail,
-          phone: profilePhone,
-          status: profileStatus,
-        })
+        body: JSON.stringify(payload)
       })
       const data = await res.json()
       if (res.ok) {
@@ -614,6 +624,10 @@ export function DataTable({
         setProfilePhone={setProfilePhone}
         profileStatus={profileStatus}
         setProfileStatus={setProfileStatus}
+        profilePassword={profilePassword}
+        setProfilePassword={setProfilePassword}
+        profileEmailVerified={profileEmailVerified}
+        setProfileEmailVerified={setProfileEmailVerified}
         handleUpdateProfileClient={handleUpdateProfileClient}
         profileUpdating={profileUpdating}
       />
